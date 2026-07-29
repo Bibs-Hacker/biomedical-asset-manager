@@ -339,6 +339,11 @@
     cursor:pointer;
   }
   .report-menu button:hover{background:var(--paper);}
+  .report-menu button[data-period="all"]{
+    border-top:1px dashed var(--line);
+    font-weight:600;
+    color:var(--brass);
+  }
 
   /* ---- Form panel ---- */
   .panel{
@@ -1038,6 +1043,7 @@
         <button data-period="daily">Daily (today)</button>
         <button data-period="weekly">Weekly (this week)</button>
         <button data-period="monthly">Monthly (this month)</button>
+        <button data-period="all">Full report (all-time)</button>
       </div>
     </div>
     <button class="btn-new" id="toggleForm">+ New lending</button>
@@ -1813,8 +1819,9 @@ function periodRange(period){
 function generateReport(period){
   if(!window.jspdf){ alert('Report engine failed to load — check your connection and try again.'); return; }
   const { jsPDF } = window.jspdf;
-  const { start, end } = periodRange(period);
-  const inRange = records.filter(r => r.dateOut >= start && r.dateOut <= end);
+  const isAll = period === 'all';
+  const { start, end } = periodRange(isAll ? 'daily' : period);
+  const inRange = isAll ? records.slice() : records.filter(r => r.dateOut >= start && r.dateOut <= end);
 
   const doc = new jsPDF({ unit:'pt', format:'a4' });
   const pageW = doc.internal.pageSize.getWidth();
@@ -1834,14 +1841,21 @@ function generateReport(period){
   doc.setTextColor(255,255,255);
   doc.setFont('helvetica','bold');
   doc.setFontSize(19);
-  doc.text('BIOMED DEPARTMENT OFFICE', 40, 38);
+  doc.text((settings.departmentName || 'BIOMED DEPARTMENT OFFICE').toUpperCase(), 40, 38);
   doc.setFont('helvetica','normal');
   doc.setFontSize(11);
-  doc.text('Ahero County Hospital — Equipment Lending Report', 40, 56);
+  doc.text(`${settings.hospitalName || 'Ahero County Hospital'} — Equipment Lending Report`, 40, 56);
 
-  const periodLabel = period==='daily' ? `Daily report — ${fmtDate(start)}`
-                    : period==='weekly' ? `Weekly report — ${fmtDate(start)} to ${fmtDate(end)}`
-                    : `Monthly report — ${fmtDate(start)} to ${fmtDate(end)}`;
+  let periodLabel;
+  if(isAll){
+    periodLabel = inRange.length
+      ? `Full report — complete register, ${fmtDate(inRange.map(r=>r.dateOut).sort()[0])} to present`
+      : 'Full report — complete register (all-time)';
+  }else{
+    periodLabel = period==='daily' ? `Daily report — ${fmtDate(start)}`
+                : period==='weekly' ? `Weekly report — ${fmtDate(start)} to ${fmtDate(end)}`
+                : `Monthly report — ${fmtDate(start)} to ${fmtDate(end)}`;
+  }
   doc.setTextColor(228,190,90);
   doc.setFontSize(10.5);
   doc.text(periodLabel, 40, 74);
