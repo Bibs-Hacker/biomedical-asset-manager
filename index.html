@@ -1,0 +1,1933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biomed Workshop — Lending Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+  :root{
+    --paper:#E9ECE7;
+    --paper-raised:#F4F6F2;
+    --ink:#182B26;
+    --ink-soft:#4C5F58;
+    --line:#B7C4BC;
+    --brass:#B98A2E;
+    --brass-soft:#EDDFC0;
+    --out:#AE4A2A;
+    --out-soft:#F3DCCF;
+    --in:#2E6B4B;
+    --in-soft:#D8E9DD;
+    --overdue:#8C2F1D;
+    --overdue-soft:#F0D0C2;
+    --shadow: 0 1px 0 rgba(24,43,38,0.08);
+  }
+  [data-theme="dark"]{
+    --paper:#0F1E1A;
+    --paper-raised:#16302B;
+    --ink:#ECEFEA;
+    --ink-soft:#93A8A0;
+    --line:#2C453D;
+    --brass:#E4BE58;
+    --brass-soft:#3B3018;
+    --out:#E2795D;
+    --out-soft:#3A2019;
+    --in:#71C99A;
+    --in-soft:#1B3A29;
+    --overdue:#F2795E;
+    --overdue-soft:#3D1E15;
+    --shadow: 0 1px 0 rgba(0,0,0,0.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      linear-gradient(var(--paper) 1px, transparent 1px) 0 0/100% 28px,
+      var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    padding:32px 20px 80px;
+    transition:background .2s ease, color .2s ease;
+  }
+  .wrap{max-width:1020px;margin:0 auto;}
+
+  /* ---- Header / nameplate ---- */
+  .nameplate{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:22px 26px;
+    position:relative;
+    box-shadow:var(--shadow);
+    margin-bottom:18px;
+  }
+  .nameplate::before{
+    content:"";
+    position:absolute;
+    top:14px;left:14px;
+    width:9px;height:9px;
+    border-radius:50%;
+    background:var(--paper);
+    border:1.5px solid var(--ink-soft);
+  }
+  .top-actions{
+    position:absolute;
+    top:16px; right:16px;
+    display:flex;
+    gap:8px;
+  }
+  .icon-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:.05em;
+    padding:7px 12px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .icon-btn:hover{border-color:var(--brass); color:var(--brass);}
+  .icon-btn svg{width:14px; height:14px; stroke:currentColor; flex-shrink:0;}
+  .icon-btn.square{padding:8px; }
+  .theme-toggle{ /* legacy alias, kept for spacing consistency */ }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--brass);
+    margin:0 0 4px 20px;
+  }
+  h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:30px;
+    font-weight:700;
+    letter-spacing:-.01em;
+    margin:0 0 6px 20px;
+  }
+  .sub{
+    margin:0 0 16px 20px;
+    color:var(--ink-soft);
+    font-size:14px;
+  }
+  .team-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(190px,1fr));
+    gap:12px;
+    margin:0 20px;
+  }
+  .team-card{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:11px 13px;
+    position:relative;
+    overflow:hidden;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .team-card:hover{ transform:translateY(-2px); box-shadow:0 6px 16px rgba(24,43,38,0.10); }
+  .team-card.head{
+    border-color:var(--brass);
+    background:linear-gradient(135deg, var(--brass-soft), var(--paper) 65%);
+  }
+  .team-card.head::before{
+    content:"HEAD";
+    position:absolute;
+    top:7px; right:9px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:8px;
+    letter-spacing:.1em;
+    color:var(--brass);
+    font-weight:700;
+  }
+  .team-avatar{
+    width:42px; height:42px;
+    border-radius:50%;
+    object-fit:cover;
+    flex-shrink:0;
+    border:1.5px solid var(--line);
+    background:var(--paper-raised);
+  }
+  .team-avatar-fallback{
+    width:42px; height:42px;
+    border-radius:50%;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    background:var(--paper-raised);
+    border:1.5px solid var(--line);
+    color:var(--ink-soft);
+  }
+  .team-card.head .team-avatar-fallback{ color:var(--brass); border-color:var(--brass); }
+  .team-info{min-width:0;}
+  .team-name{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:13.5px;
+    font-weight:700;
+    color:var(--ink);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .team-role{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    color:var(--ink-soft);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    margin-top:1px;
+  }
+  .team-contact{
+    display:flex;
+    gap:8px;
+    margin-top:4px;
+  }
+  .team-contact a{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:18px; height:18px;
+    color:var(--ink-soft);
+  }
+  .team-contact a:hover{ color:var(--brass); }
+  .team-contact svg{ width:12px; height:12px; stroke:currentColor; }
+
+  /* ---- Stats strip ---- */
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+    margin-bottom:18px;
+  }
+  @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr);}}
+  .stat{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:12px 14px;
+    box-shadow:var(--shadow);
+  }
+  .stat .num{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:24px;
+    font-weight:700;
+    line-height:1;
+  }
+  .stat .label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-top:4px;
+  }
+  .stat.out .num{color:var(--out);}
+  .stat.in .num{color:var(--in);}
+  .stat.overdue .num{color:var(--overdue);}
+
+  /* ---- Controls ---- */
+  .controls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    margin-bottom:16px;
+    position:relative;
+  }
+  .chip{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    padding:7px 13px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:var(--paper-raised);
+    cursor:pointer;
+    color:var(--ink-soft);
+    transition:all .15s ease;
+  }
+  .chip.active{
+    background:var(--ink);
+    border-color:var(--ink);
+    color:var(--paper-raised);
+  }
+  .search{
+    flex:1;
+    min-width:160px;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:13.5px;
+    padding:8px 12px;
+    border-radius:6px;
+    border:1px solid var(--line);
+    background:var(--paper-raised);
+    color:var(--ink);
+  }
+  .search:focus{outline:2px solid var(--brass); outline-offset:1px;}
+  .btn-new, .btn-report{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    font-weight:600;
+    padding:9px 16px;
+    border-radius:6px;
+    border:1px solid var(--ink);
+    background:var(--ink);
+    color:var(--paper-raised);
+    cursor:pointer;
+    letter-spacing:.02em;
+  }
+  .btn-new svg, .btn-report svg{width:13px; height:13px; stroke:currentColor; flex-shrink:0;}
+  .btn-new:hover, .btn-report:hover{background:var(--ink-soft); border-color:var(--ink-soft);}
+  .btn-report{
+    background:transparent;
+    color:var(--ink);
+    border:1px solid var(--line);
+  }
+  .btn-report:hover{background:var(--paper-raised); color:var(--ink);}
+  .btn-new{margin-left:auto;}
+  .report-wrap{position:relative;}
+  .report-menu{
+    display:none;
+    position:absolute;
+    top:calc(100% + 6px);
+    right:0;
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:6px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.12);
+    overflow:hidden;
+    z-index:20;
+    min-width:170px;
+  }
+  .report-menu.open{display:block;}
+  .report-menu button{
+    display:block;
+    width:100%;
+    text-align:left;
+    background:none;
+    border:none;
+    padding:10px 14px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .report-menu button:hover{background:var(--paper);}
+
+  /* ---- Form panel ---- */
+  .panel{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:20px;
+    margin-bottom:20px;
+    box-shadow:var(--shadow);
+    display:none;
+  }
+  .panel.open{display:block;}
+  .panel h2{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:17px;
+    margin:0 0 14px;
+  }
+  .grid2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  @media(max-width:600px){.grid2{grid-template-columns:1fr;}}
+  .field{display:flex; flex-direction:column; gap:5px; margin-bottom:12px;}
+  .field label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .field input, .field select, .field textarea{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:14px;
+    padding:9px 10px;
+    border-radius:5px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    color:var(--ink);
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{
+    outline:2px solid var(--brass); outline-offset:1px;
+  }
+  .field textarea{resize:vertical; min-height:52px;}
+  .field.checkbox-field{flex-direction:row; align-items:center; gap:8px;}
+  .field.checkbox-field input{width:16px; height:16px;}
+  .field.checkbox-field label{margin:0;}
+
+  .image-field{margin-bottom:14px;}
+  .image-caption{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-style:italic;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin:0 0 9px;
+  }
+  .image-buttons{display:flex; gap:8px; flex-wrap:wrap;}
+  .image-buttons button{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    padding:8px 13px;
+    border-radius:5px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .image-buttons button svg{width:14px; height:14px; stroke:currentColor; flex-shrink:0;}
+  .image-buttons button:hover{border-color:var(--brass); color:var(--brass);}
+  .image-preview{
+    margin-top:10px;
+    position:relative;
+    display:inline-block;
+  }
+  .image-preview img{
+    max-width:160px;
+    max-height:120px;
+    border-radius:6px;
+    border:1px solid var(--line);
+    display:block;
+  }
+  .image-preview .remove-img{
+    position:absolute;
+    top:-8px; right:-8px;
+    width:22px; height:22px;
+    border-radius:50%;
+    background:var(--overdue);
+    color:#fff;
+    border:none;
+    cursor:pointer;
+    font-size:12px;
+    line-height:1;
+  }
+
+  .panel-actions{display:flex; gap:10px; margin-top:6px;}
+  .btn-primary, .btn-ghost{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    font-weight:600;
+    padding:9px 16px;
+    border-radius:6px;
+    cursor:pointer;
+    letter-spacing:.02em;
+  }
+  .btn-primary{background:var(--brass); border:1px solid var(--brass); color:#20180a;}
+  .btn-primary:hover{filter:brightness(0.93);}
+  .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--ink-soft);}
+  .btn-ghost:hover{background:var(--paper);}
+  .error-msg{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--out);
+    margin:-4px 0 10px;
+    display:none;
+  }
+  .error-msg.show{display:block;}
+
+  /* ---- Tag cards ---- */
+  .tags{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(280px,1fr));
+    gap:14px;
+  }
+  .tag{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-left:4px solid var(--line);
+    border-radius:6px;
+    padding:16px 16px 14px;
+    position:relative;
+    box-shadow:var(--shadow);
+    cursor:pointer;
+    transition:border-color .15s ease;
+  }
+  .tag.pinned{border-left-color:var(--brass);}
+  .tag.overdue{border-left-color:var(--overdue);}
+  .tag::before{
+    content:"";
+    position:absolute;
+    top:14px; left:14px;
+    width:8px; height:8px;
+    border-radius:50%;
+    background:var(--paper);
+    border:1.5px solid var(--line);
+  }
+  .pin-badge{
+    position:absolute;
+    top:12px; right:12px;
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:9.5px;
+    font-weight:600;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    background:var(--brass-soft);
+    color:var(--brass);
+    padding:3px 8px;
+    border-radius:999px;
+  }
+  .pin-badge svg{width:10px; height:10px; stroke:currentColor;}
+  .tag-photo{
+    width:100%;
+    max-height:130px;
+    object-fit:cover;
+    border-radius:5px;
+    margin-bottom:10px;
+    border:1px solid var(--line);
+  }
+  .tag-top{padding-left:20px; margin-bottom:10px; padding-right:60px;}
+  .tag-name{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:16.5px;
+    font-weight:700;
+    margin:0 0 3px;
+  }
+  .tag-meta{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+  }
+  .tag-divider{
+    border:none;
+    border-top:1px dashed var(--line);
+    margin:10px 0;
+  }
+  .tag-row{
+    display:flex;
+    justify-content:space-between;
+    font-size:13px;
+    margin-bottom:5px;
+    gap:8px;
+  }
+  .tag-row .k{color:var(--ink-soft); font-size:11px; font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:.06em; white-space:nowrap;}
+  .tag-row .v{text-align:right; font-weight:500;}
+  .status-pill{
+    display:inline-block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    font-weight:600;
+    letter-spacing:.06em;
+    padding:3px 9px;
+    border-radius:999px;
+    text-transform:uppercase;
+    margin-right:6px;
+  }
+  .status-pill.out{background:var(--out-soft); color:var(--out);}
+  .status-pill.in{background:var(--in-soft); color:var(--in);}
+  .status-pill.overdue{background:var(--overdue-soft); color:var(--overdue);}
+  .tag-notes{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin:8px 0 0;
+    font-style:italic;
+  }
+  .tag-actions{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+    flex-wrap:wrap;
+  }
+  .tag-actions button{
+    flex:1;
+    min-width:70px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    font-weight:600;
+    padding:7px 8px;
+    border-radius:5px;
+    cursor:pointer;
+    letter-spacing:.02em;
+  }
+  .btn-return{background:var(--in); border:1px solid var(--in); color:#fff;}
+  .btn-return:hover{filter:brightness(0.93);}
+  .btn-edit{background:var(--brass); border:1px solid var(--brass); color:#20180a;}
+  .btn-edit:hover{filter:brightness(0.93);}
+  .btn-pin{background:transparent; border:1px solid var(--line); color:var(--ink-soft);}
+  .btn-pin:hover{border-color:var(--brass); color:var(--brass);}
+  .btn-delete{background:transparent; border:1px solid var(--line); color:var(--ink-soft);}
+  .btn-delete:hover{border-color:var(--overdue); color:var(--overdue);}
+
+  .empty{
+    text-align:center;
+    padding:50px 20px;
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    border:1px dashed var(--line);
+    border-radius:6px;
+    background:var(--paper-raised);
+  }
+  .loading{
+    text-align:center;
+    padding:40px;
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+  }
+  .footer-note{
+    text-align:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    color:var(--ink-soft);
+    margin-top:28px;
+    opacity:.7;
+  }
+
+  /* ---- Overdue banner ---- */
+  .overdue-banner{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:14px 20px;
+    border-radius:16px;
+    margin-bottom:18px;
+    color:#fff;
+    cursor:pointer;
+    animation: pulseBanner 1.8s ease-in-out infinite;
+    box-shadow:0 6px 20px rgba(120,20,80,0.35);
+  }
+  @keyframes pulseBanner{
+    0%{background:#B8324A;}
+    35%{background:#7C3AA6;}
+    70%{background:#D24C8C;}
+    100%{background:#B8324A;}
+  }
+  .banner-icon{flex-shrink:0; display:flex; align-items:center; justify-content:center;}
+  .banner-icon svg{width:24px; height:24px; stroke:#fff;}
+  .banner-text{flex:1; display:flex; flex-direction:column; gap:2px; min-width:0;}
+  .banner-text strong{font-family:'Space Grotesk',sans-serif; font-size:15px;}
+  .banner-text span{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    opacity:.92;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .banner-ack{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    font-weight:600;
+    padding:9px 15px;
+    border-radius:8px;
+    border:1px solid rgba(255,255,255,0.65);
+    background:rgba(255,255,255,0.16);
+    color:#fff;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .banner-ack:hover{background:rgba(255,255,255,0.32);}
+
+  /* ---- Login overlay ---- */
+  .login-overlay{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(228,190,90,0.10), transparent 55%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 3px),
+      linear-gradient(160deg, #0B1613 0%, #0F231D 60%, #0B1613 100%);
+  }
+  .login-card{
+    width:100%;
+    max-width:380px;
+    background:#12241F;
+    border:1px solid #2C453D;
+    border-radius:10px;
+    padding:30px 28px 26px;
+    position:relative;
+    overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(228,190,90,0.06);
+  }
+  .login-card.shake{ animation: shakeCard .4s ease; }
+  @keyframes shakeCard{
+    0%,100%{ transform:translateX(0); }
+    20%{ transform:translateX(-8px); }
+    40%{ transform:translateX(7px); }
+    60%{ transform:translateX(-5px); }
+    80%{ transform:translateX(4px); }
+  }
+  .login-scan{
+    position:absolute;
+    top:0; left:0; right:0;
+    height:2px;
+    background:linear-gradient(90deg, transparent, #E4BE58, transparent);
+    animation: scanMove 2.6s linear infinite;
+  }
+  @keyframes scanMove{
+    0%{ transform:translateY(0); opacity:0; }
+    10%{ opacity:1; }
+    90%{ opacity:1; }
+    100%{ transform:translateY(210px); opacity:0; }
+  }
+  .login-eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:.16em;
+    color:#E4BE58;
+    margin:6px 0 10px;
+  }
+  .login-title{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:21px;
+    font-weight:700;
+    color:#ECEFEA;
+    margin:0 0 4px;
+  }
+  .login-sub{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:12.5px;
+    color:#93A8A0;
+    margin:0 0 22px;
+  }
+  .login-card .field label{ color:#93A8A0; }
+  .login-card .field input{
+    background:#0F1E1A;
+    border:1px solid #2C453D;
+    color:#ECEFEA;
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .login-card .field input:focus{ outline:2px solid #E4BE58; outline-offset:1px; }
+  .password-wrap{ position:relative; display:flex; align-items:center; }
+  .password-wrap input{ flex:1; padding-right:42px !important; }
+  .eye-toggle{
+    position:absolute;
+    right:6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:none;
+    border:none;
+    cursor:pointer;
+    padding:7px;
+    color:#93A8A0;
+  }
+  .eye-toggle svg{ width:17px; height:17px; stroke:currentColor; }
+  .eye-toggle:hover{ color:#E4BE58; }
+  .login-error{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    color:#F2795E;
+    margin:-6px 0 12px;
+    display:none;
+  }
+  .login-error.show{ display:block; }
+  .login-btn{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:.04em;
+    padding:12px;
+    border-radius:6px;
+    border:1px solid #E4BE58;
+    background:#E4BE58;
+    color:#1A1305;
+    cursor:pointer;
+    margin-top:4px;
+  }
+  .login-btn svg{ width:15px; height:15px; stroke:currentColor; }
+  .login-btn:hover{ filter:brightness(0.94); }
+  .login-hint{
+    text-align:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    color:#5C6F67;
+    margin:16px 0 0;
+  }
+
+  /* ---- Settings modal ---- */
+  .settings-overlay{
+    position:fixed;
+    inset:0;
+    z-index:90;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:36px 16px;
+    background:rgba(10,20,17,0.55);
+    overflow-y:auto;
+  }
+  .settings-panel{
+    width:100%;
+    max-width:640px;
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:26px 26px 22px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.28);
+  }
+  .settings-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    margin-bottom:6px;
+  }
+  .settings-head h2{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:19px;
+    margin:0 0 4px;
+  }
+  .settings-head p{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    margin:0;
+  }
+  .settings-close{
+    background:none;
+    border:1px solid var(--line);
+    border-radius:8px;
+    width:30px; height:30px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    color:var(--ink-soft);
+    flex-shrink:0;
+  }
+  .settings-close svg{width:14px; height:14px; stroke:currentColor;}
+  .settings-close:hover{border-color:var(--overdue); color:var(--overdue);}
+  .settings-section{
+    margin-top:20px;
+    padding-top:16px;
+    border-top:1px dashed var(--line);
+  }
+  .settings-section-title{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--brass);
+    margin:0 0 12px;
+  }
+  .settings-row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  @media(max-width:560px){.settings-row{grid-template-columns:1fr;}}
+  .staff-editor{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:14px;
+    margin-bottom:12px;
+    position:relative;
+  }
+  .staff-editor-head{display:flex; align-items:center; gap:12px; margin-bottom:12px;}
+  .staff-avatar-edit{position:relative; flex-shrink:0;}
+  .staff-avatar-edit img, .staff-avatar-edit .team-avatar-fallback{width:52px; height:52px;}
+  .staff-avatar-edit button{
+    position:absolute;
+    bottom:-4px; right:-4px;
+    width:22px; height:22px;
+    border-radius:50%;
+    background:var(--brass);
+    border:2px solid var(--paper);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    color:#20180a;
+  }
+  .staff-avatar-edit button svg{width:11px; height:11px; stroke:currentColor;}
+  .staff-remove{
+    margin-left:auto;
+    background:none;
+    border:1px solid var(--line);
+    border-radius:6px;
+    width:30px; height:30px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    color:var(--ink-soft);
+    flex-shrink:0;
+  }
+  .staff-remove svg{width:14px; height:14px; stroke:currentColor;}
+  .staff-remove:hover{border-color:var(--overdue); color:var(--overdue);}
+  .add-staff-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    font-weight:600;
+    padding:9px 14px;
+    border-radius:6px;
+    border:1px dashed var(--line);
+    background:transparent;
+    color:var(--ink-soft);
+    cursor:pointer;
+    width:100%;
+    justify-content:center;
+  }
+  .add-staff-btn svg{width:14px; height:14px; stroke:currentColor;}
+  .add-staff-btn:hover{border-color:var(--brass); color:var(--brass);}
+  .settings-changelog{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    color:var(--ink-soft);
+    margin-top:16px;
+    opacity:.85;
+  }
+  .settings-actions{
+    display:flex;
+    gap:10px;
+    margin-top:20px;
+  }
+</style>
+</head>
+<body>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card" id="loginCard">
+    <div class="login-scan"></div>
+    <p class="login-eyebrow">ACCESS TERMINAL — BIOMED-WKS-01</p>
+    <h2 class="login-title">Workshop Register Login</h2>
+    <p class="login-sub">Ahero County Hospital · Biomed Department Office</p>
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="loginUser" autocomplete="username" placeholder="Enter username" required>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <div class="password-wrap">
+        <input type="password" id="loginPass" autocomplete="current-password" placeholder="Enter password" required>
+        <button type="button" class="eye-toggle" id="eyeToggle" aria-label="Toggle password visibility"></button>
+      </div>
+    </div>
+    <p class="login-error" id="loginError">Access denied — check your username and password.</p>
+    <button class="login-btn" id="loginSubmit"><span id="loginBtnIcon"></span> AUTHENTICATE</button>
+    <p class="login-hint">Authorized workshop personnel only</p>
+  </div>
+</div>
+
+<div class="settings-overlay" id="settingsOverlay" style="display:none;">
+  <div class="settings-panel">
+    <div class="settings-head">
+      <div>
+        <h2>Department settings</h2>
+        <p id="settingsMeta">Manage the team roster shown on the dashboard</p>
+      </div>
+      <button class="settings-close" id="settingsClose"></button>
+    </div>
+
+    <div class="settings-section">
+      <p class="settings-section-title">Department details</p>
+      <div class="settings-row">
+        <div class="field">
+          <label>Department name</label>
+          <input type="text" id="sDeptName">
+        </div>
+        <div class="field">
+          <label>Hospital / facility name</label>
+          <input type="text" id="sHospitalName">
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <p class="settings-section-title">Team members</p>
+      <div id="staffList"></div>
+      <button class="add-staff-btn" id="addStaffBtn"></button>
+    </div>
+
+    <p class="settings-changelog" id="settingsChangelog"></p>
+
+    <div class="settings-actions">
+      <button class="btn-primary" id="settingsSave">Save changes</button>
+      <button class="btn-ghost" id="settingsCancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" id="appRoot" style="display:none;">
+
+  <div class="nameplate">
+    <div class="top-actions">
+      <button class="icon-btn square" id="settingsToggle" aria-label="Open settings"></button>
+      <button class="icon-btn" id="themeToggle" aria-label="Toggle theme"></button>
+    </div>
+    <p class="eyebrow">Ahero County Hospital · Workshop Register</p>
+    <h1>Biomed Department Office</h1>
+    <p class="sub">Equipment lending log for the biomedical engineering workshop</p>
+    <div class="team-grid" id="teamGrid"></div>
+  </div>
+
+  <div class="overdue-banner" id="overdueBanner" style="display:none;">
+    <div class="banner-icon" id="bannerIcon"></div>
+    <div class="banner-text">
+      <strong id="bannerCount">0 items overdue</strong>
+      <span id="bannerNames"></span>
+    </div>
+    <button class="banner-ack" id="bannerAck">Acknowledge</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat out">
+      <div class="num" id="statOut">0</div>
+      <div class="label">Currently on loan</div>
+    </div>
+    <div class="stat overdue">
+      <div class="num" id="statOverdue">0</div>
+      <div class="label">Overdue</div>
+    </div>
+    <div class="stat in">
+      <div class="num" id="statIn">0</div>
+      <div class="label">Returned</div>
+    </div>
+    <div class="stat">
+      <div class="num" id="statTotal">0</div>
+      <div class="label">Total logged</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="chip active" data-filter="all">All</button>
+    <button class="chip" data-filter="out">On loan</button>
+    <button class="chip" data-filter="overdue">Overdue</button>
+    <button class="chip" data-filter="returned">Returned</button>
+    <button class="chip" data-filter="pinned">Critical</button>
+    <input class="search" id="searchInput" type="text" placeholder="Search equipment, borrower, department…">
+    <div class="report-wrap">
+      <button class="btn-report" id="reportToggle"><span id="reportBtnIcon" style="display:inline-flex;"></span> Download report</button>
+      <div class="report-menu" id="reportMenu">
+        <button data-period="daily">Daily (today)</button>
+        <button data-period="weekly">Weekly (this week)</button>
+        <button data-period="monthly">Monthly (this month)</button>
+      </div>
+    </div>
+    <button class="btn-new" id="toggleForm">+ New lending</button>
+  </div>
+
+  <div class="panel" id="formPanel">
+    <h2 id="panelTitle">Log equipment out</h2>
+    <div class="grid2">
+      <div class="field">
+        <label>Equipment name *</label>
+        <input type="text" id="fEquipment" placeholder="e.g. Infusion pump">
+      </div>
+      <div class="field">
+        <label>Type / category</label>
+        <input type="text" id="fType" placeholder="e.g. Infusion device">
+      </div>
+      <div class="field">
+        <label>Asset / serial no.</label>
+        <input type="text" id="fSerial" placeholder="e.g. BM-0042">
+      </div>
+      <div class="field">
+        <label>Quantity</label>
+        <input type="number" id="fQty" min="1" value="1">
+      </div>
+      <div class="field">
+        <label>Borrower name *</label>
+        <input type="text" id="fBorrower" placeholder="e.g. Nurse J. Otieno">
+      </div>
+      <div class="field">
+        <label>Department / ward</label>
+        <input type="text" id="fDept" placeholder="e.g. Maternity Ward">
+      </div>
+      <div class="field">
+        <label>Date lent</label>
+        <input type="date" id="fDateOut">
+      </div>
+      <div class="field">
+        <label>Expected return date</label>
+        <input type="date" id="fDateDue">
+      </div>
+      <div class="field">
+        <label>Logged by</label>
+        <select id="fLoggedBy">
+          <option>Kennedy Onyango</option>
+          <option>Shadrack</option>
+          <option>Nancy Agolla</option>
+          <option selected>Brian</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Overdue charge (KSh) — optional</label>
+        <input type="number" id="fCharge" min="0" step="1" placeholder="e.g. 500">
+      </div>
+    </div>
+    <div class="field checkbox-field">
+      <input type="checkbox" id="fPinned">
+      <label for="fPinned">Mark as critical — must not overstay outside the department</label>
+    </div>
+    <div class="field">
+      <label>Notes / condition</label>
+      <textarea id="fNotes" placeholder="Condition on issue, accessories included, etc."></textarea>
+    </div>
+    <div class="image-field">
+      <label style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-soft); display:block; margin-bottom:6px;">Item photo</label>
+      <p class="image-caption">Give this record a face — snap or drop in a picture so the item is recognized at a glance.</p>
+      <div class="image-buttons">
+        <button type="button" id="captureBtn"></button>
+        <button type="button" id="uploadBtn"></button>
+      </div>
+      <input type="file" id="fImageCamera" accept="image/*" capture="environment" hidden>
+      <input type="file" id="fImageUpload" accept="image/*" hidden>
+      <div class="image-preview" id="imagePreview" style="display:none;">
+        <img id="imagePreviewImg" src="">
+        <button type="button" class="remove-img" id="removeImg">✕</button>
+      </div>
+    </div>
+    <p class="error-msg" id="formError">Equipment name and borrower are required.</p>
+    <div class="panel-actions">
+      <button class="btn-primary" id="saveRecord">Save lending</button>
+      <button class="btn-ghost" id="cancelForm">Cancel</button>
+    </div>
+  </div>
+
+  <div id="listArea">
+    <div class="loading">Loading register…</div>
+  </div>
+
+  <p class="footer-note">Records are shared with the whole workshop office · last write wins on simultaneous edits</p>
+</div>
+
+<script>
+const STORAGE_KEY = 'lending-records';
+const THEME_KEY = 'theme-pref';
+const SETTINGS_KEY = 'org-settings';
+let records = [];
+let currentFilter = 'all';
+let currentSearch = '';
+let openId = null;      // card whose edit button is revealed
+let editingId = null;   // record currently being edited in the panel
+let formImageData = null;
+const AUTH_USER = 'BIOMED';
+const AUTH_PASS = 'Ahero@2026';
+
+const DEFAULT_SETTINGS = {
+  departmentName: 'Biomed Department Office',
+  hospitalName: 'Ahero County Hospital',
+  team: [
+    { id:'s1', name:'Kennedy Onyango', role:'Head of Department', phone:'', email:'', photo:null, head:true },
+    { id:'s2', name:'Shadrack', role:'Biomedical Technician', phone:'', email:'', photo:null, head:false },
+    { id:'s3', name:'Nancy Agolla', role:'Biomedical Technician', phone:'', email:'', photo:null, head:false },
+    { id:'s4', name:'Brian', role:'Engineering Attaché', phone:'', email:'', photo:null, head:false }
+  ],
+  updatedAt: null,
+  changeLog: []
+};
+let settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+let editingSettings = null; // working copy while the settings modal is open
+
+const ICONS = {
+  eye: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3.2"/></svg>',
+  eyeOff: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3.2"/><line x1="3" y1="3" x2="21" y2="21"/></svg>',
+  camera: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><circle cx="12" cy="13.5" r="3.4"/></svg>',
+  upload: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4"/><path d="M7 8l5-4.5L17 8"/><path d="M4 16v3.5a1.5 1.5 0 0 0 1.5 1.5h13a1.5 1.5 0 0 0 1.5-1.5V16"/></svg>',
+  download: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 11l5 4.5L17 11"/><path d="M4 17v3.5A1.5 1.5 0 0 0 5.5 22h13a1.5 1.5 0 0 0 1.5-1.5V17"/></svg>',
+  moon: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.7A8.5 8.5 0 1 1 9.3 3.5a7 7 0 0 0 11.2 11.2z"/></svg>',
+  sun: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><line x1="12" y1="1.5" x2="12" y2="4.2"/><line x1="12" y1="19.8" x2="12" y2="22.5"/><line x1="1.5" y1="12" x2="4.2" y2="12"/><line x1="19.8" y1="12" x2="22.5" y2="12"/><line x1="4.4" y1="4.4" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.6" y2="19.6"/><line x1="4.4" y1="19.6" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.6" y2="4.4"/></svg>',
+  warning: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20.5H2z"/><line x1="12" y1="10" x2="12" y2="14.5"/><circle cx="12" cy="17.3" r="0.4" fill="currentColor" stroke="none"/></svg>',
+  pin: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a6.5 6.5 0 0 0-6.5 6.5C5.5 13.3 12 21.5 12 21.5s6.5-8.2 6.5-13A6.5 6.5 0 0 0 12 2z"/><circle cx="12" cy="8.6" r="2.3"/></svg>',
+  gear: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9.5" cy="6" r="2"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9.5" cy="18" r="2"/></svg>',
+  close: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg>',
+  phone: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3h2.8l1.6 4.3-2 1.2a11.5 11.5 0 0 0 5.6 5.6l1.2-2 4.3 1.6v2.8a1.7 1.7 0 0 1-1.8 1.7A16.5 16.5 0 0 1 4.8 4.8 1.7 1.7 0 0 1 6.5 3z"/></svg>',
+  email: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 6.5 12 13l8.5-6.5"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 7h15"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M6 7l1 12.5A2 2 0 0 0 9 21.5h6a2 2 0 0 0 2-1.9L18 7"/><path d="M9 7V4.5A1 1 0 0 1 10 3.5h4a1 1 0 0 1 1 1V7"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  arrowRight: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="19" y2="12"/><path d="M13 6l6 6-6 6"/></svg>'
+};
+
+function todayStr(){
+  return new Date().toISOString().slice(0,10);
+}
+function genId(){
+  return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+}
+function isOverdue(r){
+  return r.status === 'out' && r.dateDue && r.dateDue <= todayStr();
+}
+
+/* ---------- storage ---------- */
+async function loadRecords(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY, true);
+    records = res && res.value ? JSON.parse(res.value) : [];
+  }catch(e){
+    records = [];
+  }
+  render();
+}
+async function persist(){
+  try{
+    await window.storage.set(STORAGE_KEY, JSON.stringify(records), true);
+  }catch(e){
+    console.error('Could not save to shared storage', e);
+    alert('Could not save — check your connection and try again.');
+  }
+}
+async function loadTheme(){
+  try{
+    const res = await window.storage.get(THEME_KEY, false);
+    if(res && res.value === 'dark') applyTheme('dark');
+    else applyTheme('light');
+  }catch(e){ applyTheme('light'); }
+}
+async function saveTheme(theme){
+  try{ await window.storage.set(THEME_KEY, theme, false); }catch(e){}
+}
+function applyTheme(theme){
+  document.body.setAttribute('data-theme', theme);
+  const btn = document.getElementById('themeToggle');
+  btn.innerHTML = (theme === 'dark' ? ICONS.sun : ICONS.moon) + (theme === 'dark' ? ' Light mode' : ' Dark mode');
+}
+
+/* ---------- overdue banner ---------- */
+function updateBanner(){
+  const overdueList = records.filter(r => isOverdue(r) && !r.overdueAcked);
+  const banner = document.getElementById('overdueBanner');
+  if(overdueList.length === 0){
+    banner.style.display = 'none';
+    return;
+  }
+  const names = overdueList.map(r=>r.equipment).join(' · ');
+  document.getElementById('bannerCount').textContent =
+    overdueList.length === 1 ? '1 item overdue' : `${overdueList.length} items overdue`;
+  document.getElementById('bannerNames').textContent = names;
+  banner.style.display = 'flex';
+}
+document.getElementById('bannerAck').addEventListener('click', async (e)=>{
+  e.stopPropagation();
+  records.filter(isOverdue).forEach(r => { r.overdueAcked = true; });
+  await persist();
+  document.getElementById('overdueBanner').style.display = 'none';
+});
+document.getElementById('overdueBanner').addEventListener('click', ()=>{
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  document.querySelector('.chip[data-filter="overdue"]').classList.add('active');
+  currentFilter = 'overdue';
+  render();
+  document.getElementById('listArea').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+/* ---------- authentication ---------- */
+function attemptLogin(){
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginError');
+  if(u === AUTH_USER && p === AUTH_PASS){
+    err.classList.remove('show');
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('appRoot').style.display = 'block';
+    loadTheme();
+    loadRecords();
+    loadSettings();
+  }else{
+    err.classList.add('show');
+    const card = document.getElementById('loginCard');
+    card.classList.remove('shake');
+    void card.offsetWidth;
+    card.classList.add('shake');
+  }
+}
+document.getElementById('loginSubmit').addEventListener('click', attemptLogin);
+document.getElementById('loginUser').addEventListener('keydown', e=>{ if(e.key==='Enter') attemptLogin(); });
+document.getElementById('loginPass').addEventListener('keydown', e=>{ if(e.key==='Enter') attemptLogin(); });
+document.getElementById('eyeToggle').addEventListener('click', ()=>{
+  const pass = document.getElementById('loginPass');
+  const btn = document.getElementById('eyeToggle');
+  if(pass.type === 'password'){
+    pass.type = 'text';
+    btn.innerHTML = ICONS.eyeOff;
+  }else{
+    pass.type = 'password';
+    btn.innerHTML = ICONS.eye;
+  }
+});
+
+/* ---------- department settings & team roster ---------- */
+async function loadSettings(){
+  try{
+    const res = await window.storage.get(SETTINGS_KEY, true);
+    settings = res && res.value ? JSON.parse(res.value) : JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+  }catch(e){
+    settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+  }
+  renderTeamGrid();
+}
+async function persistSettings(){
+  try{
+    await window.storage.set(SETTINGS_KEY, JSON.stringify(settings), true);
+  }catch(e){
+    alert('Could not save settings — check your connection and try again.');
+    return false;
+  }
+  return true;
+}
+function initials(name){
+  return (name||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+}
+function renderTeamGrid(){
+  const grid = document.getElementById('teamGrid');
+  grid.innerHTML = settings.team.map(m => `
+    <div class="team-card ${m.head ? 'head' : ''}">
+      ${m.photo
+        ? `<img class="team-avatar" src="${m.photo}" alt="${escapeHtml(m.name)}">`
+        : `<div class="team-avatar-fallback">${escapeHtml(initials(m.name))}</div>`}
+      <div class="team-info">
+        <div class="team-name">${escapeHtml(m.name || 'Unnamed')}</div>
+        <div class="team-role">${escapeHtml(m.role || '')}</div>
+        <div class="team-contact">
+          ${m.phone ? `<a href="tel:${escapeHtml(m.phone)}" title="${escapeHtml(m.phone)}">${ICONS.phone}</a>` : ''}
+          ${m.email ? `<a href="mailto:${escapeHtml(m.email)}" title="${escapeHtml(m.email)}">${ICONS.email}</a>` : ''}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openSettings(){
+  editingSettings = JSON.parse(JSON.stringify(settings));
+  document.getElementById('sDeptName').value = editingSettings.departmentName || '';
+  document.getElementById('sHospitalName').value = editingSettings.hospitalName || '';
+  renderStaffEditor();
+  renderChangelog();
+  document.getElementById('settingsOverlay').style.display = 'flex';
+}
+function closeSettings(){
+  document.getElementById('settingsOverlay').style.display = 'none';
+  editingSettings = null;
+}
+function renderChangelog(){
+  const el = document.getElementById('settingsChangelog');
+  if(editingSettings.updatedAt){
+    el.textContent = `Last updated ${fmtDate(editingSettings.updatedAt.slice(0,10))} · changes are stored in the shared register and persist across future updates to this tool.`;
+  }else{
+    el.textContent = 'No changes recorded yet · changes you save here are stored in the shared register and persist across future updates to this tool.';
+  }
+}
+function renderStaffEditor(){
+  const list = document.getElementById('staffList');
+  list.innerHTML = editingSettings.team.map((m, idx) => `
+    <div class="staff-editor" data-idx="${idx}">
+      <div class="staff-editor-head">
+        <div class="staff-avatar-edit">
+          ${m.photo
+            ? `<img class="team-avatar" src="${m.photo}" alt="">`
+            : `<div class="team-avatar-fallback">${escapeHtml(initials(m.name))}</div>`}
+          <button type="button" class="staff-photo-btn" data-idx="${idx}" title="Change photo">${ICONS.camera}</button>
+        </div>
+        <div class="field" style="flex:1; margin:0;">
+          <label>Full name</label>
+          <input type="text" class="staff-name" data-idx="${idx}" value="${escapeHtml(m.name||'')}" placeholder="Full name">
+        </div>
+        <button type="button" class="staff-remove" data-idx="${idx}" title="Remove member">${ICONS.trash}</button>
+      </div>
+      <div class="settings-row">
+        <div class="field">
+          <label>Role / title</label>
+          <input type="text" class="staff-role" data-idx="${idx}" value="${escapeHtml(m.role||'')}" placeholder="e.g. Biomedical Technician">
+        </div>
+        <div class="field">
+          <label>Phone number</label>
+          <input type="text" class="staff-phone" data-idx="${idx}" value="${escapeHtml(m.phone||'')}" placeholder="e.g. 07XX XXX XXX">
+        </div>
+        <div class="field">
+          <label>Email address</label>
+          <input type="email" class="staff-email" data-idx="${idx}" value="${escapeHtml(m.email||'')}" placeholder="name@hospital.go.ke">
+        </div>
+        <div class="field checkbox-field">
+          <input type="checkbox" class="staff-head" data-idx="${idx}" ${m.head?'checked':''}>
+          <label>Department head</label>
+        </div>
+      </div>
+      <input type="file" accept="image/*" class="staff-photo-input" data-idx="${idx}" hidden>
+    </div>
+  `).join('');
+}
+document.getElementById('settingsToggle').addEventListener('click', openSettings);
+document.getElementById('settingsClose').addEventListener('click', closeSettings);
+document.getElementById('settingsCancel').addEventListener('click', closeSettings);
+document.getElementById('addStaffBtn').addEventListener('click', ()=>{
+  editingSettings.team.push({ id:genId(), name:'', role:'', phone:'', email:'', photo:null, head:false });
+  renderStaffEditor();
+});
+
+document.getElementById('staffList').addEventListener('input', (e)=>{
+  const idx = e.target.dataset.idx;
+  if(idx === undefined) return;
+  const m = editingSettings.team[idx];
+  if(e.target.classList.contains('staff-name')) m.name = e.target.value;
+  if(e.target.classList.contains('staff-role')) m.role = e.target.value;
+  if(e.target.classList.contains('staff-phone')) m.phone = e.target.value;
+  if(e.target.classList.contains('staff-email')) m.email = e.target.value;
+});
+document.getElementById('staffList').addEventListener('change', (e)=>{
+  const idx = e.target.dataset.idx;
+  if(idx === undefined) return;
+  if(e.target.classList.contains('staff-head')){
+    editingSettings.team.forEach((m,i)=> m.head = (String(i)===String(idx)) ? e.target.checked : false);
+    renderStaffEditor();
+  }
+  if(e.target.classList.contains('staff-photo-input') && e.target.files[0]){
+    compressImage(e.target.files[0], 240).then(dataUrl=>{
+      editingSettings.team[idx].photo = dataUrl;
+      renderStaffEditor();
+    });
+  }
+});
+document.getElementById('staffList').addEventListener('click', (e)=>{
+  const removeBtn = e.target.closest('.staff-remove');
+  const photoBtn = e.target.closest('.staff-photo-btn');
+  if(removeBtn){
+    const idx = removeBtn.dataset.idx;
+    if(confirm('Remove this team member from the dashboard?')){
+      editingSettings.team.splice(idx,1);
+      renderStaffEditor();
+    }
+  }
+  if(photoBtn){
+    const idx = photoBtn.dataset.idx;
+    document.querySelector(`.staff-photo-input[data-idx="${idx}"]`).click();
+  }
+});
+
+document.getElementById('settingsSave').addEventListener('click', async ()=>{
+  editingSettings.departmentName = document.getElementById('sDeptName').value.trim() || DEFAULT_SETTINGS.departmentName;
+  editingSettings.hospitalName = document.getElementById('sHospitalName').value.trim() || DEFAULT_SETTINGS.hospitalName;
+  editingSettings.team = editingSettings.team.filter(m => (m.name||'').trim());
+  editingSettings.updatedAt = new Date().toISOString();
+  const note = `Updated department settings — ${editingSettings.team.length} team member(s) on record`;
+  editingSettings.changeLog = [note, ...(editingSettings.changeLog||[])].slice(0,10);
+  settings = editingSettings;
+  const ok = await persistSettings();
+  if(ok){
+    document.querySelector('.eyebrow').textContent = `${settings.hospitalName} · Workshop Register`;
+    document.querySelector('.nameplate h1').textContent = settings.departmentName;
+    renderTeamGrid();
+    closeSettings();
+  }
+});
+
+function compressImage(file, maxWidth){
+  return new Promise((resolve)=>{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const scale = Math.min(1, maxWidth / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.75));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ---------- static icon wiring (available before login) ---------- */
+document.getElementById('eyeToggle').innerHTML = ICONS.eye;
+document.getElementById('loginBtnIcon').innerHTML = ICONS.arrowRight;
+document.getElementById('settingsToggle').innerHTML = ICONS.gear;
+document.getElementById('settingsClose').innerHTML = ICONS.close;
+document.getElementById('reportBtnIcon').innerHTML = ICONS.download;
+document.getElementById('bannerIcon').innerHTML = ICONS.warning;
+document.getElementById('captureBtn').innerHTML = ICONS.camera + ' Take photo';
+document.getElementById('uploadBtn').innerHTML = ICONS.upload + ' Upload photo';
+document.getElementById('addStaffBtn').innerHTML = ICONS.plus + ' Add team member';
+
+/* ---------- rendering ---------- */
+function fmtDate(d){
+  if(!d) return '—';
+  const dt = new Date(d + 'T00:00:00');
+  if(isNaN(dt)) return d;
+  return dt.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+}
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function render(){
+  const out = records.filter(r=>r.status==='out').length;
+  const inn = records.filter(r=>r.status==='returned').length;
+  const overdue = records.filter(isOverdue).length;
+  document.getElementById('statOut').textContent = out;
+  document.getElementById('statIn').textContent = inn;
+  document.getElementById('statOverdue').textContent = overdue;
+  document.getElementById('statTotal').textContent = records.length;
+
+  updateBanner();
+
+  let list = records.slice().sort((a,b)=> b.createdAt - a.createdAt);
+  list.sort((a,b)=> (b.pinned?1:0) - (a.pinned?1:0));
+
+  if(currentFilter==='out') list = list.filter(r=>r.status==='out');
+  if(currentFilter==='returned') list = list.filter(r=>r.status==='returned');
+  if(currentFilter==='overdue') list = list.filter(isOverdue);
+  if(currentFilter==='pinned') list = list.filter(r=>r.pinned);
+
+  if(currentSearch){
+    const q = currentSearch.toLowerCase();
+    list = list.filter(r =>
+      (r.equipment||'').toLowerCase().includes(q) ||
+      (r.borrower||'').toLowerCase().includes(q) ||
+      (r.department||'').toLowerCase().includes(q) ||
+      (r.type||'').toLowerCase().includes(q) ||
+      (r.serial||'').toLowerCase().includes(q)
+    );
+  }
+
+  const area = document.getElementById('listArea');
+
+  if(list.length===0){
+    area.innerHTML = '<div class="empty">No lending records match here yet. Log new equipment above to start the register.</div>';
+    return;
+  }
+
+  area.innerHTML = '<div class="tags">' + list.map(r => {
+    const overdueFlag = isOverdue(r);
+    return `
+    <div class="tag ${r.pinned?'pinned':''} ${overdueFlag?'overdue':''}" data-id="${r.id}">
+      ${r.pinned ? `<span class="pin-badge">${ICONS.pin}Critical</span>` : ''}
+      ${r.image ? `<img class="tag-photo" src="${r.image}" alt="${escapeHtml(r.equipment)}">` : ''}
+      <div class="tag-top">
+        <p class="tag-name">${escapeHtml(r.equipment)}</p>
+        <p class="tag-meta">${escapeHtml(r.type || 'Unspecified type')}${r.serial ? ' · ' + escapeHtml(r.serial) : ''}${r.qty && r.qty>1 ? ' · Qty ' + r.qty : ''}</p>
+      </div>
+      <hr class="tag-divider">
+      <div class="tag-row"><span class="k">To</span><span class="v">${escapeHtml(r.borrower)}</span></div>
+      ${r.department ? `<div class="tag-row"><span class="k">Dept</span><span class="v">${escapeHtml(r.department)}</span></div>` : ''}
+      <div class="tag-row"><span class="k">Out</span><span class="v">${fmtDate(r.dateOut)}</span></div>
+      <div class="tag-row"><span class="k">Due</span><span class="v">${fmtDate(r.dateDue)}</span></div>
+      ${r.status==='returned' ? `<div class="tag-row"><span class="k">Returned</span><span class="v">${fmtDate(r.dateReturned)}</span></div>` : ''}
+      <div class="tag-row"><span class="k">Logged by</span><span class="v">${escapeHtml(r.loggedBy)}</span></div>
+      ${overdueFlag && r.charge ? `<div class="tag-row"><span class="k">Charge</span><span class="v" style="color:var(--overdue); font-weight:700;">KSh ${Number(r.charge).toLocaleString()}</span></div>` : ''}
+      <div style="margin-top:8px;">
+        ${overdueFlag ? '<span class="status-pill overdue">Overdue</span>' : `<span class="status-pill ${r.status==='out' ? 'out':'in'}">${r.status==='out' ? 'On loan' : 'Returned'}</span>`}
+      </div>
+      ${r.notes ? `<p class="tag-notes">${escapeHtml(r.notes)}</p>` : ''}
+      <div class="tag-actions">
+        ${r.status==='out' ? `<button class="btn-return" data-action="return" data-id="${r.id}">Mark returned</button>` : ''}
+        ${openId===r.id ? `<button class="btn-edit" data-action="edit" data-id="${r.id}">Edit</button>` : ''}
+        <button class="btn-pin" data-action="pin" data-id="${r.id}">${r.pinned ? 'Unpin' : 'Pin'}</button>
+        <button class="btn-delete" data-action="delete" data-id="${r.id}">Delete</button>
+      </div>
+    </div>
+  `;
+  }).join('') + '</div>';
+}
+
+/* ---------- card interactions ---------- */
+document.getElementById('listArea').addEventListener('click', async (e)=>{
+  const btn = e.target.closest('button[data-action]');
+  const card = e.target.closest('.tag');
+
+  if(!btn && card){
+    // toggle the edit button reveal for this card
+    const id = card.dataset.id;
+    openId = (openId === id) ? null : id;
+    render();
+    return;
+  }
+  if(!btn) return;
+
+  const id = btn.dataset.id;
+  const action = btn.dataset.action;
+  const rec = records.find(r=>r.id===id);
+  if(!rec) return;
+
+  if(action==='return'){
+    rec.status = 'returned';
+    rec.dateReturned = todayStr();
+    await persist();
+    render();
+  }
+  if(action==='pin'){
+    rec.pinned = !rec.pinned;
+    await persist();
+    render();
+  }
+  if(action==='delete'){
+    if(confirm(`Delete the record for "${rec.equipment}"? This can't be undone.`)){
+      records = records.filter(r=>r.id!==id);
+      if(openId===id) openId=null;
+      await persist();
+      render();
+    }
+  }
+  if(action==='edit'){
+    openEditForm(rec);
+  }
+});
+
+document.querySelectorAll('.chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    currentFilter = chip.dataset.filter;
+    render();
+  });
+});
+
+document.getElementById('searchInput').addEventListener('input', (e)=>{
+  currentSearch = e.target.value;
+  render();
+});
+
+/* ---------- theme ---------- */
+document.getElementById('themeToggle').addEventListener('click', ()=>{
+  const current = document.body.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  saveTheme(next);
+});
+
+/* ---------- report menu ---------- */
+const reportMenu = document.getElementById('reportMenu');
+document.getElementById('reportToggle').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  reportMenu.classList.toggle('open');
+});
+document.addEventListener('click', ()=> reportMenu.classList.remove('open'));
+reportMenu.addEventListener('click', (e)=> e.stopPropagation());
+reportMenu.querySelectorAll('button[data-period]').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    generateReport(b.dataset.period);
+    reportMenu.classList.remove('open');
+  });
+});
+
+/* ---------- form panel ---------- */
+const panel = document.getElementById('formPanel');
+
+document.getElementById('toggleForm').addEventListener('click', ()=>{
+  if(panel.classList.contains('open') && editingId===null){
+    panel.classList.remove('open');
+    return;
+  }
+  editingId = null;
+  clearForm();
+  document.getElementById('panelTitle').textContent = 'Log equipment out';
+  document.getElementById('saveRecord').textContent = 'Save lending';
+  panel.classList.add('open');
+  document.getElementById('fDateOut').value = todayStr();
+  document.getElementById('fEquipment').focus();
+});
+
+document.getElementById('cancelForm').addEventListener('click', ()=>{
+  panel.classList.remove('open');
+  editingId = null;
+  openId = null;
+  clearForm();
+  render();
+});
+
+function clearForm(){
+  ['fEquipment','fType','fSerial','fBorrower','fDept','fDateOut','fDateDue','fNotes'].forEach(id=>{
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('fQty').value = 1;
+  document.getElementById('fLoggedBy').value = 'Brian';
+  document.getElementById('fCharge').value = '';
+  document.getElementById('fPinned').checked = false;
+  document.getElementById('formError').classList.remove('show');
+  formImageData = null;
+  document.getElementById('imagePreview').style.display = 'none';
+  document.getElementById('imagePreviewImg').src = '';
+}
+
+function openEditForm(rec){
+  editingId = rec.id;
+  document.getElementById('panelTitle').textContent = 'Edit lending record';
+  document.getElementById('saveRecord').textContent = 'Save changes';
+  document.getElementById('fEquipment').value = rec.equipment || '';
+  document.getElementById('fType').value = rec.type || '';
+  document.getElementById('fSerial').value = rec.serial || '';
+  document.getElementById('fQty').value = rec.qty || 1;
+  document.getElementById('fBorrower').value = rec.borrower || '';
+  document.getElementById('fDept').value = rec.department || '';
+  document.getElementById('fDateOut').value = rec.dateOut || '';
+  document.getElementById('fDateDue').value = rec.dateDue || '';
+  document.getElementById('fLoggedBy').value = rec.loggedBy || 'Brian';
+  document.getElementById('fCharge').value = rec.charge || '';
+  document.getElementById('fPinned').checked = !!rec.pinned;
+  document.getElementById('fNotes').value = rec.notes || '';
+  formImageData = rec.image || null;
+  if(formImageData){
+    document.getElementById('imagePreviewImg').src = formImageData;
+    document.getElementById('imagePreview').style.display = 'inline-block';
+  }else{
+    document.getElementById('imagePreview').style.display = 'none';
+  }
+  document.getElementById('formError').classList.remove('show');
+  panel.classList.add('open');
+  panel.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+document.getElementById('saveRecord').addEventListener('click', async ()=>{
+  const equipment = document.getElementById('fEquipment').value.trim();
+  const borrower = document.getElementById('fBorrower').value.trim();
+  const errorEl = document.getElementById('formError');
+
+  if(!equipment || !borrower){
+    errorEl.classList.add('show');
+    return;
+  }
+  errorEl.classList.remove('show');
+
+  const data = {
+    equipment,
+    type: document.getElementById('fType').value.trim(),
+    serial: document.getElementById('fSerial').value.trim(),
+    qty: parseInt(document.getElementById('fQty').value) || 1,
+    borrower,
+    department: document.getElementById('fDept').value.trim(),
+    dateOut: document.getElementById('fDateOut').value || todayStr(),
+    dateDue: document.getElementById('fDateDue').value,
+    loggedBy: document.getElementById('fLoggedBy').value,
+    charge: parseFloat(document.getElementById('fCharge').value) || 0,
+    pinned: document.getElementById('fPinned').checked,
+    notes: document.getElementById('fNotes').value.trim(),
+    image: formImageData
+  };
+
+  if(editingId){
+    const rec = records.find(r=>r.id===editingId);
+    if(rec){
+      const dueDateChanged = rec.dateDue !== data.dateDue;
+      Object.assign(rec, data);
+      if(dueDateChanged) rec.overdueAcked = false;
+    }
+  }else{
+    records.push(Object.assign({
+      id: genId(),
+      dateReturned: null,
+      status: 'out',
+      overdueAcked: false,
+      createdAt: Date.now()
+    }, data));
+  }
+
+  await persist();
+  editingId = null;
+  openId = null;
+  clearForm();
+  panel.classList.remove('open');
+  render();
+});
+
+/* ---------- image capture / upload ---------- */
+document.getElementById('captureBtn').addEventListener('click', ()=> document.getElementById('fImageCamera').click());
+document.getElementById('uploadBtn').addEventListener('click', ()=> document.getElementById('fImageUpload').click());
+
+function handleImageFile(file){
+  if(!file) return;
+  const img = new Image();
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    img.onload = ()=>{
+      const maxW = 640;
+      const scale = Math.min(1, maxW / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      formImageData = canvas.toDataURL('image/jpeg', 0.72);
+      document.getElementById('imagePreviewImg').src = formImageData;
+      document.getElementById('imagePreview').style.display = 'inline-block';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+document.getElementById('fImageCamera').addEventListener('change', (e)=> handleImageFile(e.target.files[0]));
+document.getElementById('fImageUpload').addEventListener('change', (e)=> handleImageFile(e.target.files[0]));
+document.getElementById('removeImg').addEventListener('click', ()=>{
+  formImageData = null;
+  document.getElementById('imagePreview').style.display = 'none';
+  document.getElementById('fImageCamera').value = '';
+  document.getElementById('fImageUpload').value = '';
+});
+
+/* ---------- PDF report ---------- */
+function periodRange(period){
+  const now = new Date();
+  const start = new Date(now); const end = new Date(now);
+  if(period === 'daily'){
+    // start/end already today
+  }else if(period === 'weekly'){
+    const day = (now.getDay() + 6) % 7; // Monday = 0
+    start.setDate(now.getDate() - day);
+    end.setDate(start.getDate() + 6);
+  }else if(period === 'monthly'){
+    start.setDate(1);
+    end.setMonth(start.getMonth() + 1);
+    end.setDate(0);
+  }
+  const toStr = d => d.toISOString().slice(0,10);
+  return { start: toStr(start), end: toStr(end) };
+}
+
+function generateReport(period){
+  if(!window.jspdf){ alert('Report engine failed to load — check your connection and try again.'); return; }
+  const { jsPDF } = window.jspdf;
+  const { start, end } = periodRange(period);
+  const inRange = records.filter(r => r.dateOut >= start && r.dateOut <= end);
+
+  const doc = new jsPDF({ unit:'pt', format:'a4' });
+  const pageW = doc.internal.pageSize.getWidth();
+  const brass = [185,138,46];
+  const ink = [24,43,38];
+  const inkSoft = [110,128,120];
+  const out = [174,74,42];
+  const good = [46,107,75];
+  const overdue = [140,47,29];
+
+  // header band
+  doc.setFillColor(22,48,43);
+  doc.rect(0,0,pageW,92,'F');
+  doc.setFillColor(...brass);
+  doc.rect(0,88,pageW,4,'F');
+
+  doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(19);
+  doc.text('BIOMED DEPARTMENT OFFICE', 40, 38);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(11);
+  doc.text('Ahero County Hospital — Equipment Lending Report', 40, 56);
+
+  const periodLabel = period==='daily' ? `Daily report — ${fmtDate(start)}`
+                    : period==='weekly' ? `Weekly report — ${fmtDate(start)} to ${fmtDate(end)}`
+                    : `Monthly report — ${fmtDate(start)} to ${fmtDate(end)}`;
+  doc.setTextColor(228,190,90);
+  doc.setFontSize(10.5);
+  doc.text(periodLabel, 40, 74);
+
+  // summary boxes
+  const total = inRange.length;
+  const outCount = inRange.filter(r=>r.status==='out').length;
+  const inCount = inRange.filter(r=>r.status==='returned').length;
+  const odCount = inRange.filter(isOverdue).length;
+
+  const boxes = [
+    {label:'TOTAL LOGGED', val: total, color: ink},
+    {label:'ON LOAN', val: outCount, color: out},
+    {label:'RETURNED', val: inCount, color: good},
+    {label:'OVERDUE', val: odCount, color: overdue}
+  ];
+  const boxW = (pageW - 80 - 30) / 4;
+  boxes.forEach((b,i)=>{
+    const x = 40 + i*(boxW+10);
+    const y = 112;
+    doc.setDrawColor(200,205,198);
+    doc.setFillColor(244,246,242);
+    doc.roundedRect(x, y, boxW, 54, 4, 4, 'FD');
+    doc.setTextColor(...b.color);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(20);
+    doc.text(String(b.val), x+12, y+30);
+    doc.setTextColor(...inkSoft);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(8);
+    doc.text(b.label, x+12, y+44);
+  });
+
+  // charges summary line
+  const chargesDue = inRange.filter(isOverdue).reduce((s,r)=> s + (Number(r.charge)||0), 0);
+  doc.setTextColor(...overdue);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10);
+  doc.text(`Overdue charges accrued this period: KSh ${chargesDue.toLocaleString()}`, 40, 186);
+
+  // table
+  const rows = inRange
+    .sort((a,b)=> (a.dateOut||'').localeCompare(b.dateOut||''))
+    .map(r => [
+      r.equipment || '—',
+      r.type || '—',
+      r.borrower || '—',
+      r.department || '—',
+      fmtDate(r.dateOut),
+      fmtDate(r.dateDue),
+      isOverdue(r) ? 'Overdue' : (r.status==='out' ? 'On loan' : 'Returned'),
+      (isOverdue(r) && r.charge) ? `KSh ${Number(r.charge).toLocaleString()}` : '—'
+    ]);
+
+  doc.autoTable({
+    startY: 200,
+    head: [['Equipment','Type','Borrower','Dept','Out','Due','Status','Charge']],
+    body: rows.length ? rows : [['No records logged in this period','','','','','','','']],
+    styles: { font:'helvetica', fontSize:9, cellPadding:6, textColor: ink, lineColor:[210,215,208], lineWidth:0.5 },
+    headStyles: { fillColor:[22,48,43], textColor:[255,255,255], fontStyle:'bold' },
+    alternateRowStyles: { fillColor:[244,246,242] },
+    didParseCell: (data)=>{
+      if(data.section==='body' && data.column.index===6){
+        const v = data.cell.raw;
+        if(v==='Overdue'){ data.cell.styles.textColor = overdue; data.cell.styles.fontStyle='bold'; }
+        else if(v==='On loan'){ data.cell.styles.textColor = out; }
+        else if(v==='Returned'){ data.cell.styles.textColor = good; }
+      }
+      if(data.section==='body' && data.column.index===7 && data.cell.raw !== '—'){
+        data.cell.styles.textColor = overdue;
+        data.cell.styles.fontStyle = 'bold';
+      }
+    },
+    margin:{ left:40, right:40 }
+  });
+
+  const pageCount = doc.internal.getNumberOfPages();
+  for(let i=1;i<=pageCount;i++){
+    doc.setPage(i);
+    const h = doc.internal.pageSize.getHeight();
+    doc.setDrawColor(...brass);
+    doc.setLineWidth(0.7);
+    doc.line(40, h-46, pageW-40, h-46);
+    doc.setTextColor(...inkSoft);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(8);
+    doc.text('Prepared by the Biomed Workshop Team — Kennedy Onyango · Shadrack · Nancy Agolla · Brian', 40, h-30);
+    doc.text(`Generated ${fmtDate(todayStr())} · Page ${i} of ${pageCount}`, pageW-40, h-30, { align:'right' });
+  }
+
+  doc.save(`biomed-lending-report-${period}-${todayStr()}.pdf`);
+}
+
+document.getElementById('loginUser').focus();
+</script>
+</body>
+</html>
