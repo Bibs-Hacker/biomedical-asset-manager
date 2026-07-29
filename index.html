@@ -121,18 +121,18 @@
   }
   .team-grid{
     display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(190px,1fr));
+    grid-template-columns:repeat(auto-fill, minmax(230px,1fr));
     gap:12px;
     margin:0 20px;
   }
   .team-card{
     display:flex;
-    align-items:center;
+    align-items:flex-start;
     gap:11px;
     background:var(--paper);
     border:1px solid var(--line);
     border-radius:10px;
-    padding:11px 13px;
+    padding:12px 13px;
     position:relative;
     overflow:hidden;
     transition:transform .15s ease, box-shadow .15s ease;
@@ -159,6 +159,7 @@
     flex-shrink:0;
     border:1.5px solid var(--line);
     background:var(--paper-raised);
+    margin-top:1px;
   }
   .team-avatar-fallback{
     width:42px; height:42px;
@@ -173,9 +174,10 @@
     background:var(--paper-raised);
     border:1.5px solid var(--line);
     color:var(--ink-soft);
+    margin-top:1px;
   }
   .team-card.head .team-avatar-fallback{ color:var(--brass); border-color:var(--brass); }
-  .team-info{min-width:0;}
+  .team-info{min-width:0; flex:1;}
   .team-name{
     font-family:'Space Grotesk',sans-serif;
     font-size:13.5px;
@@ -184,6 +186,7 @@
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
+    padding-right:34px;
   }
   .team-role{
     font-family:'IBM Plex Mono',monospace;
@@ -196,18 +199,23 @@
   }
   .team-contact{
     display:flex;
-    gap:8px;
-    margin-top:4px;
+    flex-direction:column;
+    gap:3px;
+    margin-top:6px;
   }
   .team-contact a{
     display:inline-flex;
     align-items:center;
-    justify-content:center;
-    width:18px; height:18px;
+    gap:5px;
     color:var(--ink-soft);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
   }
   .team-contact a:hover{ color:var(--brass); }
-  .team-contact svg{ width:12px; height:12px; stroke:currentColor; }
+  .team-contact svg{ width:11px; height:11px; stroke:currentColor; flex-shrink:0; }
 
   /* ---- Stats strip ---- */
   .stats{
@@ -1307,8 +1315,8 @@ function renderTeamGrid(){
         <div class="team-name">${escapeHtml(m.name || 'Unnamed')}</div>
         <div class="team-role">${escapeHtml(m.role || '')}</div>
         <div class="team-contact">
-          ${m.phone ? `<a href="tel:${escapeHtml(m.phone)}" title="${escapeHtml(m.phone)}">${ICONS.phone}</a>` : ''}
-          ${m.email ? `<a href="mailto:${escapeHtml(m.email)}" title="${escapeHtml(m.email)}">${ICONS.email}</a>` : ''}
+          ${m.phone ? `<a href="tel:${escapeHtml(m.phone)}" title="Call ${escapeHtml(m.phone)}">${ICONS.phone}<span>${escapeHtml(m.phone)}</span></a>` : ''}
+          ${m.email ? `<a href="mailto:${escapeHtml(m.email)}" title="Email ${escapeHtml(m.email)}">${ICONS.email}<span>${escapeHtml(m.email)}</span></a>` : ''}
         </div>
       </div>
     </div>
