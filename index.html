@@ -80,6 +80,14 @@
     display:flex;
     gap:8px;
   }
+  @media(max-width:480px){
+    .top-actions{
+      position:static;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+  }
   .icon-btn{
     display:inline-flex;
     align-items:center;
@@ -923,11 +931,342 @@
     gap:10px;
     margin-top:20px;
   }
+
+  /* ---- Splash screen ---- */
+  .splash-screen{
+    position:fixed;
+    inset:0;
+    z-index:200;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    cursor:pointer;
+    background:linear-gradient(160deg, #0B1613 0%, #0F231D 55%, #0B1613 100%);
+    transition:opacity .8s ease;
+  }
+  .splash-screen.fade-out{ opacity:0; pointer-events:none; }
+  .splash-grid{
+    position:absolute;
+    inset:0;
+    background:
+      repeating-linear-gradient(0deg, rgba(228,190,90,0.05) 0px, rgba(228,190,90,0.05) 1px, transparent 1px, transparent 34px),
+      repeating-linear-gradient(90deg, rgba(228,190,90,0.05) 0px, rgba(228,190,90,0.05) 1px, transparent 1px, transparent 34px);
+    animation: gridDrift 14s linear infinite;
+  }
+  @keyframes gridDrift{
+    from{ background-position:0 0, 0 0; }
+    to{ background-position:0 340px, 340px 0; }
+  }
+  .splash-glow{
+    position:absolute;
+    top:50%; left:50%;
+    width:520px; height:520px;
+    transform:translate(-50%,-50%);
+    background:radial-gradient(circle, rgba(228,190,90,0.14) 0%, transparent 68%);
+    animation: glowBreathe 3.4s ease-in-out infinite;
+  }
+  @keyframes glowBreathe{
+    0%,100%{ opacity:.55; transform:translate(-50%,-50%) scale(0.92); }
+    50%{ opacity:1; transform:translate(-50%,-50%) scale(1.06); }
+  }
+  .splash-dots span{
+    position:absolute;
+    width:3px; height:3px;
+    border-radius:50%;
+    background:#E4BE58;
+    top:var(--y); left:var(--x);
+    opacity:0;
+    animation: dotTwinkle 3.2s ease-in-out infinite;
+    animation-delay:var(--d);
+    box-shadow:0 0 6px rgba(228,190,90,0.8);
+  }
+  @keyframes dotTwinkle{
+    0%,100%{ opacity:0; transform:translateY(0) scale(0.6); }
+    50%{ opacity:.9; transform:translateY(-8px) scale(1.2); }
+  }
+  .splash-content{
+    position:relative;
+    z-index:1;
+    text-align:center;
+    padding:20px;
+    max-width:440px;
+  }
+  .splash-badge{
+    position:relative;
+    width:74px; height:74px;
+    margin:0 auto 6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    animation: fadeInUp .9s ease 0s both;
+  }
+  .splash-ring{
+    position:absolute;
+    inset:0;
+    border-radius:50%;
+    border:1.5px dashed rgba(228,190,90,0.55);
+    animation: ringSpin 9s linear infinite;
+  }
+  .splash-ring::before{
+    content:"";
+    position:absolute;
+    inset:-8px;
+    border-radius:50%;
+    border:1px solid rgba(228,190,90,0.18);
+  }
+  @keyframes ringSpin{ to{ transform:rotate(360deg); } }
+  .splash-cross{
+    width:26px; height:26px;
+    stroke:#E4BE58;
+    fill:none;
+    stroke-width:2;
+    stroke-linecap:round;
+    filter:drop-shadow(0 0 5px rgba(228,190,90,0.6));
+    animation: crossPulse 2.6s ease-in-out infinite;
+  }
+  @keyframes crossPulse{
+    0%,100%{ transform:scale(1); opacity:.85; }
+    50%{ transform:scale(1.18); opacity:1; }
+  }
+  .splash-ekg{
+    width:100%;
+    max-width:420px;
+    height:80px;
+    margin:0 auto 4px;
+    overflow:visible;
+  }
+  .splash-ekg polyline{
+    fill:none;
+    stroke:#E4BE58;
+    stroke-width:2.5;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    stroke-dasharray:900;
+    stroke-dashoffset:900;
+    filter:drop-shadow(0 0 6px rgba(228,190,90,0.55));
+    animation: ekgDraw 2.6s ease-in-out infinite;
+  }
+  @keyframes ekgDraw{
+    0%{ stroke-dashoffset:900; opacity:.3; }
+    8%{ opacity:1; }
+    55%{ stroke-dashoffset:0; opacity:1; }
+    75%{ stroke-dashoffset:0; opacity:.85; }
+    100%{ stroke-dashoffset:-900; opacity:0; }
+  }
+  .splash-eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.22em;
+    color:#93A8A0;
+    margin:0 0 10px;
+    animation: fadeInUp .8s ease .15s both;
+  }
+  .splash-title{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:clamp(28px,7vw,42px);
+    font-weight:700;
+    letter-spacing:.02em;
+    color:#ECEFEA;
+    margin:0 0 8px;
+    animation: fadeInUp .8s ease .3s both;
+    text-shadow:0 0 24px rgba(228,190,90,0.18);
+  }
+  .splash-sub{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:13px;
+    color:#93A8A0;
+    margin:0 0 22px;
+    animation: fadeInUp .8s ease .45s both;
+  }
+  @keyframes fadeInUp{
+    from{ opacity:0; transform:translateY(10px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  .splash-status{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:#E4BE58;
+    min-height:16px;
+    margin:0 0 12px;
+    letter-spacing:.03em;
+    animation: fadeInUp .8s ease .6s both;
+  }
+  .splash-status::after{
+    content:"";
+    display:inline-block;
+    width:6px;
+    margin-left:2px;
+    border-right:1px solid #E4BE58;
+    animation: caretBlink 0.9s steps(1) infinite;
+  }
+  @keyframes caretBlink{ 50%{ border-color:transparent; } }
+  .splash-bar-track{
+    width:100%;
+    max-width:280px;
+    height:3px;
+    margin:0 auto;
+    background:rgba(228,190,90,0.15);
+    border-radius:999px;
+    overflow:hidden;
+    animation: fadeInUp .8s ease .7s both;
+  }
+  .splash-bar-fill{
+    width:0%;
+    height:100%;
+    background:linear-gradient(90deg, #B98A2E, #E4BE58);
+    border-radius:999px;
+    transition:width .3s linear;
+    box-shadow:0 0 8px rgba(228,190,90,0.6);
+  }
+  .splash-percent{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    color:#5C6F67;
+    margin:8px 0 0;
+    letter-spacing:.05em;
+    animation: fadeInUp .8s ease .8s both;
+  }
+  .splash-tap{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:9.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:#5C6F67;
+    margin:18px 0 0;
+    opacity:0;
+    animation: fadeInUp .8s ease 2.4s forwards;
+  }
+
+  /* ---- Guest mode ---- */
+  .login-divider{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:16px 0 12px;
+    color:#5C6F67;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+  }
+  .login-divider::before, .login-divider::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:#2C453D;
+  }
+  .guest-btn{
+    width:100%;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    font-weight:600;
+    padding:11px;
+    border-radius:6px;
+    border:1px solid #2C453D;
+    background:transparent;
+    color:#93A8A0;
+    cursor:pointer;
+  }
+  .guest-btn:hover{ border-color:#E4BE58; color:#E4BE58; }
+  .guest-badge{
+    display:inline-block;
+    margin-left:20px;
+    margin-top:2px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    padding:4px 10px;
+    border-radius:999px;
+    background:var(--overdue-soft);
+    color:var(--overdue);
+    font-weight:600;
+  }
+
+  /* ---- Guidelines modal ---- */
+  .guide-overlay{
+    position:fixed;
+    inset:0;
+    z-index:95;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:36px 16px;
+    background:rgba(10,20,17,0.6);
+    overflow-y:auto;
+  }
+  .guide-panel{
+    width:100%;
+    max-width:640px;
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:26px 26px 22px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.28);
+  }
+  .guide-steps{ margin-top:14px; }
+  .guide-step{
+    display:flex;
+    gap:13px;
+    padding:12px 0;
+    border-bottom:1px dashed var(--line);
+  }
+  .guide-step:last-child{ border-bottom:none; }
+  .guide-num{
+    flex-shrink:0;
+    width:26px; height:26px;
+    border-radius:50%;
+    background:var(--brass-soft);
+    color:var(--brass);
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .guide-step strong{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:13.5px;
+    color:var(--ink);
+    display:block;
+    margin-bottom:2px;
+  }
+  .guide-step p{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin:0;
+    line-height:1.5;
+  }
 </style>
 </head>
 <body>
 
-<div class="login-overlay" id="loginOverlay">
+<div class="splash-screen" id="splashScreen">
+  <div class="splash-grid"></div>
+  <div class="splash-glow"></div>
+  <div class="splash-dots" id="splashDots"></div>
+  <div class="splash-content">
+    <div class="splash-badge">
+      <div class="splash-ring"></div>
+      <svg class="splash-cross" viewBox="0 0 24 24"><line x1="12" y1="4" x2="12" y2="20"/><line x1="4" y1="12" x2="20" y2="12"/></svg>
+    </div>
+    <svg class="splash-ekg" viewBox="0 0 600 120" preserveAspectRatio="none">
+      <polyline id="ekgLine" points="0,60 90,60 110,60 125,20 140,100 155,30 170,60 210,60 230,60 245,40 260,80 275,60 320,60 600,60" />
+    </svg>
+    <p class="splash-eyebrow">INITIALIZING SYSTEM</p>
+    <h1 class="splash-title">BIOMED WORKSHOP</h1>
+    <p class="splash-sub">Ahero County Hospital · Equipment Lending Register</p>
+    <p class="splash-status" id="splashStatus">Booting core modules</p>
+    <div class="splash-bar-track"><div class="splash-bar-fill" id="splashBar"></div></div>
+    <p class="splash-percent" id="splashPercent">0%</p>
+    <p class="splash-tap">tap anywhere to continue</p>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay" style="display:none;">
   <div class="login-card" id="loginCard">
     <div class="login-scan"></div>
     <p class="login-eyebrow">ACCESS TERMINAL — BIOMED-WKS-01</p>
@@ -946,11 +1285,67 @@
     </div>
     <p class="login-error" id="loginError">Access denied — check your username and password.</p>
     <button class="login-btn" id="loginSubmit"><span id="loginBtnIcon"></span> AUTHENTICATE</button>
-    <p class="login-hint">Authorized workshop personnel only</p>
+    <div class="login-divider"><span>or</span></div>
+    <button class="guest-btn" id="guestBtn">Continue as Guest — view only</button>
+    <p class="login-hint">Authorized workshop personnel only · guests can browse but not edit</p>
+  </div>
+</div>
+
+<div class="guide-overlay" id="guideOverlay" style="display:none;">
+  <div class="guide-panel">
+    <div class="settings-head">
+      <div>
+        <h2>How this register works</h2>
+        <p id="guideMeta">A quick walkthrough before you get started</p>
+      </div>
+      <button class="settings-close" id="guideCloseX"></button>
+    </div>
+    <div class="guide-steps">
+      <div class="guide-step">
+        <span class="guide-num">1</span>
+        <div><strong>Log equipment out</strong><p>Tap "+ New lending" and fill in the equipment, borrower, department, and dates. A photo and an optional overdue charge can be added too.</p></div>
+      </div>
+      <div class="guide-step">
+        <span class="guide-num">2</span>
+        <div><strong>Read a card at a glance</strong><p>Every record shows as a tag — status pill tells you if it's on loan, returned, or overdue.</p></div>
+      </div>
+      <div class="guide-step">
+        <span class="guide-num">3</span>
+        <div><strong>Edit a record</strong><p>Tap the card once to reveal an Edit button, make your changes, then save — the button disappears once you're done.</p></div>
+      </div>
+      <div class="guide-step">
+        <span class="guide-num">4</span>
+        <div><strong>Mark items returned</strong><p>Tap "Mark returned" on any active card the moment the equipment comes back.</p></div>
+      </div>
+      <div class="guide-step">
+        <span class="guide-num">5</span>
+        <div><strong>Pin critical tools</strong><p>Mark equipment that must never overstay outside the department — pinned items float to the top with a brass badge.</p></div>
+      </div>
+      <div class="guide-step">
+        <span class="guide-num">6</span>
+        <div><strong>Overdue alerts</strong><p>A pulsing banner appears the moment a due date is reached. Acknowledge it and it stays quiet — unless a new item goes overdue.</p></div>
+      </div>
+      <div class="guide-step">
+        <span class="guide-num">7</span>
+        <div><strong>Download reports</strong><p>Get a decorated PDF — daily, weekly, monthly, or the full all-time register — from the "Download report" menu.</p></div>
+      </div>
+      <div class="guide-step">
+        <span class="guide-num">8</span>
+        <div><strong>Manage the team</strong><p>Open Settings (the gear icon) to update the department name, staff roles, phone numbers, emails, and photos — saved for the whole team.</p></div>
+      </div>
+      <div class="guide-step">
+        <span class="guide-num">9</span>
+        <div><strong>Guest access</strong><p>Visitors using "Continue as Guest" can browse everything but can't add, edit, or change any record or setting.</p></div>
+      </div>
+    </div>
+    <div class="settings-actions">
+      <button class="btn-primary" id="guideEnter">Got it — enter the system</button>
+    </div>
   </div>
 </div>
 
 <div class="settings-overlay" id="settingsOverlay" style="display:none;">
+
   <div class="settings-panel">
     <div class="settings-head">
       <div>
@@ -993,9 +1388,12 @@
 
   <div class="nameplate">
     <div class="top-actions">
+      <button class="icon-btn square" id="guideToggle" aria-label="Open guidelines"></button>
       <button class="icon-btn square" id="settingsToggle" aria-label="Open settings"></button>
       <button class="icon-btn" id="themeToggle" aria-label="Toggle theme"></button>
+      <button class="icon-btn square" id="lockToggle" aria-label="Sign out"></button>
     </div>
+    <span class="guest-badge" id="guestBadge" style="display:none;">Guest mode — view only</span>
     <p class="eyebrow">Ahero County Hospital · Workshop Register</p>
     <h1>Biomed Department Office</h1>
     <p class="sub">Equipment lending log for the biomedical engineering workshop</p>
@@ -1178,7 +1576,9 @@ const ICONS = {
   email: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 6.5 12 13l8.5-6.5"/></svg>',
   trash: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 7h15"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M6 7l1 12.5A2 2 0 0 0 9 21.5h6a2 2 0 0 0 2-1.9L18 7"/><path d="M9 7V4.5A1 1 0 0 1 10 3.5h4a1 1 0 0 1 1 1V7"/></svg>',
   plus: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
-  arrowRight: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="19" y2="12"/><path d="M13 6l6 6-6 6"/></svg>'
+  arrowRight: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="19" y2="12"/><path d="M13 6l6 6-6 6"/></svg>',
+  guide: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><line x1="12" y1="11" x2="12" y2="16.3"/><circle cx="12" cy="7.7" r="0.55" fill="currentColor" stroke="none"/></svg>',
+  lock: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="11" width="15" height="9.5" rx="1.8"/><path d="M7.5 11V7.5a4.5 4.5 0 0 1 9 0V11"/></svg>'
 };
 
 function todayStr(){
@@ -1191,33 +1591,64 @@ function isOverdue(r){
   return r.status === 'out' && r.dateDue && r.dateDue <= todayStr();
 }
 
+/* ---------- storage adapter ----------
+   window.storage (shared cloud sync) only exists inside Claude's artifact
+   viewer. If this file is opened as a standalone deployed page, that API
+   is absent — fall back to the browser's localStorage so the tool still
+   works, just without cross-device sync. */
+const hasCloudStorage = (typeof window.storage !== 'undefined')
+  && window.storage
+  && typeof window.storage.get === 'function'
+  && typeof window.storage.set === 'function';
+
+async function storageGet(key, shared){
+  if(hasCloudStorage) return await window.storage.get(key, shared);
+  const raw = window.localStorage.getItem('biomed:' + key);
+  return raw !== null ? { key, value: raw, shared } : null;
+}
+async function storageSet(key, value, shared){
+  if(hasCloudStorage) return await window.storage.set(key, value, shared);
+  window.localStorage.setItem('biomed:' + key, value);
+  return { key, value, shared };
+}
+function showStorageModeNotice(){
+  if(hasCloudStorage) return;
+  const note = document.querySelector('.footer-note');
+  if(note){
+    note.textContent = 'Standalone mode — changes are saved to this device/browser only, not synced across the team. Open this tool from within Claude for shared, cross-device sync.';
+    note.style.color = 'var(--overdue)';
+    note.style.opacity = '0.85';
+  }
+}
+
 /* ---------- storage ---------- */
 async function loadRecords(){
   try{
-    const res = await window.storage.get(STORAGE_KEY, true);
+    const res = await storageGet(STORAGE_KEY, true);
     records = res && res.value ? JSON.parse(res.value) : [];
   }catch(e){
+    console.error('Load records failed', e);
     records = [];
   }
   render();
 }
 async function persist(){
   try{
-    await window.storage.set(STORAGE_KEY, JSON.stringify(records), true);
+    await storageSet(STORAGE_KEY, JSON.stringify(records), true);
   }catch(e){
-    console.error('Could not save to shared storage', e);
-    alert('Could not save — check your connection and try again.');
+    console.error('Could not save records', e);
+    alert('Could not save changes: ' + (e && e.message ? e.message : 'unknown error'));
   }
 }
 async function loadTheme(){
   try{
-    const res = await window.storage.get(THEME_KEY, false);
+    const res = await storageGet(THEME_KEY, false);
     if(res && res.value === 'dark') applyTheme('dark');
     else applyTheme('light');
   }catch(e){ applyTheme('light'); }
 }
 async function saveTheme(theme){
-  try{ await window.storage.set(THEME_KEY, theme, false); }catch(e){}
+  try{ await storageSet(THEME_KEY, theme, false); }catch(e){}
 }
 function applyTheme(theme){
   document.body.setAttribute('data-theme', theme);
@@ -1229,6 +1660,7 @@ function applyTheme(theme){
 function updateBanner(){
   const overdueList = records.filter(r => isOverdue(r) && !r.overdueAcked);
   const banner = document.getElementById('overdueBanner');
+  document.getElementById('bannerAck').style.display = isGuest ? 'none' : 'inline-flex';
   if(overdueList.length === 0){
     banner.style.display = 'none';
     return;
@@ -1254,28 +1686,86 @@ document.getElementById('overdueBanner').addEventListener('click', ()=>{
 });
 
 /* ---------- authentication ---------- */
-function attemptLogin(){
+let isGuest = false;
+
+async function enterApp(guest){
+  isGuest = guest;
+  applyGuestRestrictions();
+  await Promise.all([loadTheme(), loadRecords(), loadSettings()]);
+  showStorageModeNotice();
+  document.getElementById('loginOverlay').style.display = 'none';
+  if(guest){
+    revealAppRoot();
+  }else{
+    document.getElementById('guideOverlay').style.display = 'flex';
+  }
+  resetInactivityTimer();
+}
+function revealAppRoot(){
+  document.getElementById('guideOverlay').style.display = 'none';
+  document.getElementById('appRoot').style.display = 'block';
+}
+function applyGuestRestrictions(){
+  const badge = document.getElementById('guestBadge');
+  const settingsBtn = document.getElementById('settingsToggle');
+  const newLendingBtn = document.getElementById('toggleForm');
+  badge.style.display = isGuest ? 'inline-block' : 'none';
+  settingsBtn.style.display = isGuest ? 'none' : 'inline-flex';
+  newLendingBtn.style.display = isGuest ? 'none' : 'inline-flex';
+}
+
+/* ---------- login attempt limiting ---------- */
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_MS = 30000;
+let failedAttempts = 0;
+let lockoutUntil = 0;
+
+async function attemptLogin(){
+  const now = Date.now();
+  const err = document.getElementById('loginError');
+  if(now < lockoutUntil){
+    const secsLeft = Math.ceil((lockoutUntil - now) / 1000);
+    err.textContent = `Too many attempts — try again in ${secsLeft}s.`;
+    err.classList.add('show');
+    return;
+  }
   const u = document.getElementById('loginUser').value.trim();
   const p = document.getElementById('loginPass').value;
-  const err = document.getElementById('loginError');
   if(u === AUTH_USER && p === AUTH_PASS){
+    failedAttempts = 0;
     err.classList.remove('show');
-    document.getElementById('loginOverlay').style.display = 'none';
-    document.getElementById('appRoot').style.display = 'block';
-    loadTheme();
-    loadRecords();
-    loadSettings();
+    await runEntry(false, document.getElementById('loginSubmit'));
   }else{
+    failedAttempts++;
+    if(failedAttempts >= MAX_ATTEMPTS){
+      lockoutUntil = Date.now() + LOCKOUT_MS;
+      failedAttempts = 0;
+      err.textContent = `Too many attempts — try again in ${Math.ceil(LOCKOUT_MS/1000)}s.`;
+    }else{
+      err.textContent = `Access denied — check your username and password. (${MAX_ATTEMPTS - failedAttempts} attempt(s) left)`;
+    }
     err.classList.add('show');
     const card = document.getElementById('loginCard');
     card.classList.remove('shake');
     void card.offsetWidth;
     card.classList.add('shake');
+    document.getElementById('loginPass').value = '';
   }
+}
+async function runEntry(guest, btn){
+  const originalHTML = btn.innerHTML;
+  btn.disabled = true;
+  btn.style.opacity = '0.7';
+  btn.textContent = 'Loading register…';
+  await enterApp(guest);
+  btn.disabled = false;
+  btn.style.opacity = '';
+  btn.innerHTML = originalHTML;
 }
 document.getElementById('loginSubmit').addEventListener('click', attemptLogin);
 document.getElementById('loginUser').addEventListener('keydown', e=>{ if(e.key==='Enter') attemptLogin(); });
 document.getElementById('loginPass').addEventListener('keydown', e=>{ if(e.key==='Enter') attemptLogin(); });
+document.getElementById('guestBtn').addEventListener('click', (e)=> runEntry(true, e.currentTarget));
 document.getElementById('eyeToggle').addEventListener('click', ()=>{
   const pass = document.getElementById('loginPass');
   const btn = document.getElementById('eyeToggle');
@@ -1288,21 +1778,131 @@ document.getElementById('eyeToggle').addEventListener('click', ()=>{
   }
 });
 
+/* ---------- sign out / lock & inactivity auto-lock ---------- */
+const INACTIVITY_LIMIT_MS = 10 * 60 * 1000; // 10 minutes idle auto-locks the session
+let inactivityTimer = null;
+
+function lockSystem(){
+  isGuest = false;
+  clearTimeout(inactivityTimer);
+  document.getElementById('appRoot').style.display = 'none';
+  document.getElementById('guideOverlay').style.display = 'none';
+  document.getElementById('settingsOverlay').style.display = 'none';
+  document.getElementById('formPanel').classList.remove('open');
+  document.getElementById('reportMenu').classList.remove('open');
+  // clear sensitive in-memory data so it isn't left visible on a shared device
+  records = [];
+  settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+  editingId = null;
+  openId = null;
+  editingSettings = null;
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginError').classList.remove('show');
+  document.getElementById('loginOverlay').style.display = 'flex';
+  document.getElementById('loginUser').focus();
+}
+document.getElementById('lockToggle').addEventListener('click', lockSystem);
+
+function resetInactivityTimer(){
+  clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(lockSystem, INACTIVITY_LIMIT_MS);
+}
+['mousemove','keydown','click','touchstart','scroll'].forEach(evt=>{
+  document.addEventListener(evt, ()=>{
+    if(document.getElementById('appRoot').style.display === 'block'){
+      resetInactivityTimer();
+    }
+  }, { passive:true });
+});
+
+/* ---------- guidelines modal ---------- */
+document.getElementById('guideEnter').addEventListener('click', revealAppRoot);
+document.getElementById('guideCloseX').addEventListener('click', revealAppRoot);
+document.getElementById('guideToggle').addEventListener('click', ()=>{
+  document.getElementById('guideOverlay').style.display = 'flex';
+});
+
+/* ---------- splash screen ---------- */
+(function initSplash(){
+  const splash = document.getElementById('splashScreen');
+  const bar = document.getElementById('splashBar');
+  const statusEl = document.getElementById('splashStatus');
+  const percentEl = document.getElementById('splashPercent');
+  const dotsWrap = document.getElementById('splashDots');
+  const DURATION = 5200; // total splash time, ms
+  const FADE = 750;
+
+  // scatter a handful of twinkling particles across the screen
+  const positions = [
+    ['12%','22%','0s'], ['85%','18%','.4s'], ['22%','78%','.8s'],
+    ['76%','70%','1.2s'], ['48%','12%','1.6s'], ['8%','55%','2s'],
+    ['92%','48%','.6s'], ['58%','86%','1.9s']
+  ];
+  dotsWrap.innerHTML = positions.map(([x,y,d]) =>
+    `<span style="--x:${x}; --y:${y}; --d:${d};"></span>`).join('');
+
+  const statuses = [
+    'Booting core modules',
+    'Syncing shared register',
+    'Loading team roster',
+    'Calibrating dashboard',
+    'Securing session',
+    'Almost ready'
+  ];
+  let statusIdx = 0;
+  statusEl.textContent = statuses[0];
+  const statusTimer = setInterval(()=>{
+    statusIdx = (statusIdx + 1) % statuses.length;
+    statusEl.textContent = statuses[statusIdx];
+  }, Math.round(DURATION / statuses.length));
+
+  const start = performance.now();
+  let rafId = null;
+  function tick(now){
+    const pct = Math.min(100, Math.round(((now - start) / DURATION) * 100));
+    percentEl.textContent = pct + '%';
+    bar.style.width = pct + '%';
+    if(pct < 100){ rafId = requestAnimationFrame(tick); }
+  }
+  rafId = requestAnimationFrame(tick);
+
+  let finished = false;
+  function finishSplash(){
+    if(finished) return;
+    finished = true;
+    clearInterval(statusTimer);
+    if(rafId) cancelAnimationFrame(rafId);
+    bar.style.width = '100%';
+    percentEl.textContent = '100%';
+    splash.classList.add('fade-out');
+    setTimeout(()=>{
+      splash.style.display = 'none';
+      document.getElementById('loginOverlay').style.display = 'flex';
+      document.getElementById('loginUser').focus();
+    }, FADE);
+  }
+  setTimeout(finishSplash, DURATION);
+  splash.addEventListener('click', finishSplash);
+})();
+
 /* ---------- department settings & team roster ---------- */
 async function loadSettings(){
   try{
-    const res = await window.storage.get(SETTINGS_KEY, true);
+    const res = await storageGet(SETTINGS_KEY, true);
     settings = res && res.value ? JSON.parse(res.value) : JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
   }catch(e){
+    console.error('Load settings failed', e);
     settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
   }
   renderTeamGrid();
 }
 async function persistSettings(){
   try{
-    await window.storage.set(SETTINGS_KEY, JSON.stringify(settings), true);
+    await storageSet(SETTINGS_KEY, JSON.stringify(settings), true);
   }catch(e){
-    alert('Could not save settings — check your connection and try again.');
+    console.error('Could not save settings', e);
+    alert('Could not save settings: ' + (e && e.message ? e.message : 'unknown error'));
     return false;
   }
   return true;
@@ -1330,6 +1930,7 @@ function renderTeamGrid(){
 }
 
 function openSettings(){
+  if(isGuest) return;
   editingSettings = JSON.parse(JSON.stringify(settings));
   document.getElementById('sDeptName').value = editingSettings.departmentName || '';
   document.getElementById('sHospitalName').value = editingSettings.hospitalName || '';
@@ -1351,40 +1952,48 @@ function renderChangelog(){
 }
 function renderStaffEditor(){
   const list = document.getElementById('staffList');
-  list.innerHTML = editingSettings.team.map((m, idx) => `
-    <div class="staff-editor" data-idx="${idx}">
+  list.innerHTML = editingSettings.team.map((m) => `
+    <div class="staff-editor" data-id="${m.id}">
       <div class="staff-editor-head">
         <div class="staff-avatar-edit">
           ${m.photo
             ? `<img class="team-avatar" src="${m.photo}" alt="">`
             : `<div class="team-avatar-fallback">${escapeHtml(initials(m.name))}</div>`}
-          <button type="button" class="staff-photo-btn" data-idx="${idx}" title="Change photo">${ICONS.camera}</button>
+          <button type="button" class="staff-photo-btn" data-id="${m.id}" title="Change photo">${ICONS.camera}</button>
         </div>
         <div class="field" style="flex:1; margin:0;">
           <label>Full name</label>
-          <input type="text" class="staff-name" data-idx="${idx}" value="${escapeHtml(m.name||'')}" placeholder="Full name">
+          <input type="text" class="staff-name" data-id="${m.id}" name="name-${m.id}" id="name-${m.id}"
+            value="${escapeHtml(m.name||'')}" placeholder="Full name"
+            autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false">
         </div>
-        <button type="button" class="staff-remove" data-idx="${idx}" title="Remove member">${ICONS.trash}</button>
+        <button type="button" class="staff-remove" data-id="${m.id}" title="Remove member">${ICONS.trash}</button>
       </div>
       <div class="settings-row">
         <div class="field">
           <label>Role / title</label>
-          <input type="text" class="staff-role" data-idx="${idx}" value="${escapeHtml(m.role||'')}" placeholder="e.g. Biomedical Technician">
+          <input type="text" class="staff-role" data-id="${m.id}" name="role-${m.id}" id="role-${m.id}"
+            value="${escapeHtml(m.role||'')}" placeholder="e.g. Biomedical Technician"
+            autocomplete="off" autocorrect="off" spellcheck="false">
         </div>
         <div class="field">
           <label>Phone number</label>
-          <input type="text" class="staff-phone" data-idx="${idx}" value="${escapeHtml(m.phone||'')}" placeholder="e.g. 07XX XXX XXX">
+          <input type="tel" class="staff-phone" data-id="${m.id}" name="phone-${m.id}" id="phone-${m.id}"
+            value="${escapeHtml(m.phone||'')}" placeholder="e.g. 07XX XXX XXX"
+            autocomplete="off" inputmode="tel">
         </div>
         <div class="field">
           <label>Email address</label>
-          <input type="email" class="staff-email" data-idx="${idx}" value="${escapeHtml(m.email||'')}" placeholder="name@hospital.go.ke">
+          <input type="email" class="staff-email" data-id="${m.id}" name="email-${m.id}" id="email-${m.id}"
+            value="${escapeHtml(m.email||'')}" placeholder="name@hospital.go.ke"
+            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="email">
         </div>
         <div class="field checkbox-field">
-          <input type="checkbox" class="staff-head" data-idx="${idx}" ${m.head?'checked':''}>
+          <input type="checkbox" class="staff-head" data-id="${m.id}" ${m.head?'checked':''}>
           <label>Department head</label>
         </div>
       </div>
-      <input type="file" accept="image/*" class="staff-photo-input" data-idx="${idx}" hidden>
+      <input type="file" accept="image/*" class="staff-photo-input" data-id="${m.id}" hidden>
     </div>
   `).join('');
 }
@@ -1396,25 +2005,31 @@ document.getElementById('addStaffBtn').addEventListener('click', ()=>{
   renderStaffEditor();
 });
 
+function findStaff(id){
+  return editingSettings.team.find(m => m.id === id);
+}
+
 document.getElementById('staffList').addEventListener('input', (e)=>{
-  const idx = e.target.dataset.idx;
-  if(idx === undefined) return;
-  const m = editingSettings.team[idx];
+  const id = e.target.dataset.id;
+  if(id === undefined) return;
+  const m = findStaff(id);
+  if(!m) return;
   if(e.target.classList.contains('staff-name')) m.name = e.target.value;
   if(e.target.classList.contains('staff-role')) m.role = e.target.value;
   if(e.target.classList.contains('staff-phone')) m.phone = e.target.value;
   if(e.target.classList.contains('staff-email')) m.email = e.target.value;
 });
 document.getElementById('staffList').addEventListener('change', (e)=>{
-  const idx = e.target.dataset.idx;
-  if(idx === undefined) return;
+  const id = e.target.dataset.id;
+  if(id === undefined) return;
   if(e.target.classList.contains('staff-head')){
-    editingSettings.team.forEach((m,i)=> m.head = (String(i)===String(idx)) ? e.target.checked : false);
+    editingSettings.team.forEach(m => { m.head = (m.id === id) ? e.target.checked : false; });
     renderStaffEditor();
   }
   if(e.target.classList.contains('staff-photo-input') && e.target.files[0]){
     compressImage(e.target.files[0], 240).then(dataUrl=>{
-      editingSettings.team[idx].photo = dataUrl;
+      const m = findStaff(id);
+      if(m) m.photo = dataUrl;
       renderStaffEditor();
     });
   }
@@ -1423,15 +2038,15 @@ document.getElementById('staffList').addEventListener('click', (e)=>{
   const removeBtn = e.target.closest('.staff-remove');
   const photoBtn = e.target.closest('.staff-photo-btn');
   if(removeBtn){
-    const idx = removeBtn.dataset.idx;
+    const id = removeBtn.dataset.id;
     if(confirm('Remove this team member from the dashboard?')){
-      editingSettings.team.splice(idx,1);
+      editingSettings.team = editingSettings.team.filter(m => m.id !== id);
       renderStaffEditor();
     }
   }
   if(photoBtn){
-    const idx = photoBtn.dataset.idx;
-    document.querySelector(`.staff-photo-input[data-idx="${idx}"]`).click();
+    const id = photoBtn.dataset.id;
+    document.querySelector(`.staff-photo-input[data-id="${id}"]`).click();
   }
 });
 
@@ -1477,6 +2092,9 @@ document.getElementById('eyeToggle').innerHTML = ICONS.eye;
 document.getElementById('loginBtnIcon').innerHTML = ICONS.arrowRight;
 document.getElementById('settingsToggle').innerHTML = ICONS.gear;
 document.getElementById('settingsClose').innerHTML = ICONS.close;
+document.getElementById('guideToggle').innerHTML = ICONS.guide;
+document.getElementById('guideCloseX').innerHTML = ICONS.close;
+document.getElementById('lockToggle').innerHTML = ICONS.lock;
 document.getElementById('reportBtnIcon').innerHTML = ICONS.download;
 document.getElementById('bannerIcon').innerHTML = ICONS.warning;
 document.getElementById('captureBtn').innerHTML = ICONS.camera + ' Take photo';
@@ -1553,12 +2171,13 @@ function render(){
         ${overdueFlag ? '<span class="status-pill overdue">Overdue</span>' : `<span class="status-pill ${r.status==='out' ? 'out':'in'}">${r.status==='out' ? 'On loan' : 'Returned'}</span>`}
       </div>
       ${r.notes ? `<p class="tag-notes">${escapeHtml(r.notes)}</p>` : ''}
+      ${isGuest ? '' : `
       <div class="tag-actions">
         ${r.status==='out' ? `<button class="btn-return" data-action="return" data-id="${r.id}">Mark returned</button>` : ''}
         ${openId===r.id ? `<button class="btn-edit" data-action="edit" data-id="${r.id}">Edit</button>` : ''}
         <button class="btn-pin" data-action="pin" data-id="${r.id}">${r.pinned ? 'Unpin' : 'Pin'}</button>
         <button class="btn-delete" data-action="delete" data-id="${r.id}">Delete</button>
-      </div>
+      </div>`}
     </div>
   `;
   }).join('') + '</div>';
@@ -1648,6 +2267,7 @@ reportMenu.querySelectorAll('button[data-period]').forEach(b=>{
 const panel = document.getElementById('formPanel');
 
 document.getElementById('toggleForm').addEventListener('click', ()=>{
+  if(isGuest) return;
   if(panel.classList.contains('open') && editingId===null){
     panel.classList.remove('open');
     return;
@@ -1948,8 +2568,6 @@ function generateReport(period){
 
   doc.save(`biomed-lending-report-${period}-${todayStr()}.pdf`);
 }
-
-document.getElementById('loginUser').focus();
 </script>
 </body>
 </html>
